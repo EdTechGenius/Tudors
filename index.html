@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="King's Advisor">
+  <meta name="theme-color" content="#3a1d10">
+  <meta name="description" content="A 3D educational game for Year 6: serve Henry VIII as Wolsey, More, Cromwell and Cranmer at Hampton Court Palace.">
+  <title>The King's Advisor</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="touch"></div>
+  <div id="joy"><div id="knob"></div></div>
+
+  <div id="hud" hidden>
+    <div id="objectives"></div>
+    <div id="meters">
+      <div class="meter" id="m-favour"><span class="mlabel">👑<span class="mtxt"> King's Favour</span></span><span class="track"><span class="fill"></span></span></div>
+      <div class="meter" id="m-honesty"><span class="mlabel">⚖️<span class="mtxt"> Honesty</span></span><span class="track"><span class="fill"></span></span></div>
+    </div>
+    <div id="guide"><span class="arrow">▲</span><span class="gtext"></span></div>
+    <div id="hud-right">
+      <canvas id="minimap" width="220" height="220" aria-label="Map"></canvas>
+      <div class="hud-buttons">
+        <button id="btn-notes" class="hbtn" aria-label="Notebook">📖<span>Notebook</span></button>
+        <button id="btn-map" class="hbtn" aria-label="Map">🗺️<span>Map</span></button>
+        <button id="btn-menu" class="hbtn" aria-label="Menu">⏸️<span>Menu</span></button>
+      </div>
+    </div>
+    <div id="area-toast"></div>
+    <button id="act" hidden><span class="aicon">✋</span><span class="alabel"></span></button>
+    <div id="toasts"></div>
+  </div>
+
+  <div id="dialogue"></div>
+  <div id="overlay"></div>
+  <div id="loading" class="show"><div class="spinner">🏰</div><p>Building Hampton Court…</p></div>
+  <div id="print-area"></div>
+
+  <noscript><p style="padding:2em">This game needs JavaScript turned on.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
