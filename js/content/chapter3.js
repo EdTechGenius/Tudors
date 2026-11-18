@@ -9,15 +9,15 @@ export default {
   short: 'Cromwell',
   title: 'The King\'s Fixer',
   years: '1539–1540',
-  you: { robe: '#222', gown: '#2a2a2a', long: true, hat: 'cap', hatColor: '#111', trim: '#5a4a3a', width: 1.15, chain: true, bg: '#3a3a3a' },
+  you: { robe: '#222', gown: '#2a2a2a', long: true, hat: 'cap', hatColor: '#111', trim: '#5a4a3a', width: 1.15, chain: true, bg: '#3a3a3a', photo: 'cromwell' },
   era: { greatHall: 'new', clock: false, haInitials: true },
   start: { x: 41, z: 0, yaw: -Math.PI / 2 },
   meters: { favour: 60, honesty: 45 },
 
   intro: [
-    { title: 'The blacksmith\'s son', text: 'It is 1539. You are <b>Thomas Cromwell</b>, the son of a blacksmith from Putney. You have been a soldier, a merchant and a lawyer. Now you are the King\'s chief minister — and the most powerful man in England.<br><br>You made Henry <b>Supreme Head of the Church</b>, and you closed hundreds of <b>monasteries</b>, sending their riches to the King.' },
-    { title: 'Seven troubled years', text: 'Much has happened. In 1536, <b>Anne Boleyn</b> was accused of crimes — most historians think the charges were made up — and she was executed. You helped bring her down.<br><br>Henry then married <b>Jane Seymour</b>. In 1537 she gave birth to a son, <b>Prince Edward</b>, right here at Hampton Court. But twelve days later, Jane died.' },
-    { title: 'England in danger', text: 'Now the Pope has thrown Henry out of the Catholic Church. The Emperor and the King of France have made peace — and might invade England together!<br><br>Henry needs <b>allies</b>, <b>money</b> for defence… and a <b>new wife</b>. Your plan: marry Henry to a German princess, <b>Anne of Cleves</b>.' },
+    { title: 'The blacksmith\'s son', text: 'It is 1539. You are <b>Thomas Cromwell</b>, the son of a blacksmith from Putney. In your adventurous youth you were a soldier in Italy, a merchant in the Netherlands and then a lawyer in London. Now you are the King\'s chief minister, and the most powerful man in England.<br><br>It was you who made Henry <b>Supreme Head of the Church</b>, and it was you who closed hundreds of <b>monasteries</b>, sending their land and treasure to the King.' },
+    { title: 'Seven troubled years', text: 'Much has happened since Thomas More\'s death. In 1536, <b>Anne Boleyn</b> was accused of terrible crimes (most historians believe the charges were invented) and she was executed. You played a leading part in her downfall.<br><br>Henry then married <b>Jane Seymour</b>. In 1537 she gave birth to a son, <b>Prince Edward</b>, right here at Hampton Court. Tragically, just twelve days later, Jane died.' },
+    { title: 'England in danger', text: 'Now the Pope has thrown Henry out of the Catholic Church altogether. Worse still, the Emperor and the King of France have made peace with each other, and they might join forces to invade England!<br><br>Henry needs <b>allies</b>, <b>money</b> for defence… and a <b>new wife</b>. Your plan is to marry him to a German princess, <b>Anne of Cleves</b>.' },
   ],
 
   npcs: [
@@ -26,45 +26,45 @@ export default {
       dialogue: (s) => (!talked(s, 'henry') ? 'intro' : s.letter ? 'audience' : 'waiting'),
       dialogues: {
         intro: { start: 'a', nodes: {
-          a: { text: 'Cromwell. Come in. I still dream of my sweet Jane, you know. She gave me my son, and God took her away.', next: 'b' },
-          b: { text: 'But Edward is healthy, thank God. And England is in danger. The Pope calls me a heretic, and France and the Emperor are friends now. They could attack us together!', next: 'c' },
-          c: { text: 'You have a plan, I hear. A German princess? Tell me, Cromwell — is she beautiful?', choices: [
-            { t: '"Everyone says she is very beautiful, Majesty!"', fx: { favour: 6, honesty: -8 }, next: 'd1' },
-            { t: '"I have not seen her, Majesty. I will send Master Holbein to paint her portrait."', fx: { favour: 2, honesty: 6 }, next: 'd2' },
+          a: { text: 'Come in, Cromwell. I still dream of my sweet Jane, you know. She gave me my son at last, and then God took her away from me. Sometimes I think that I shall never be happy again.', next: 'b' },
+          b: { text: 'But Edward is strong and healthy, thanks be to God, and England must come first. The Pope calls me a heretic, and France and the Emperor have become friends. If they decide to attack us together, we could be in grave danger!', next: 'c' },
+          c: { text: 'I hear that you have a plan involving a German princess. Tell me honestly, Cromwell: is she beautiful?', choices: [
+            { t: '"Everyone says that she is very beautiful, Majesty!"', fx: { favour: 6, honesty: -8 }, next: 'd1' },
+            { t: '"I have not seen her myself, Majesty. I will send Master Holbein to paint her portrait."', fx: { favour: 2, honesty: 6 }, next: 'd2' },
           ] },
-          d1: { text: 'Excellent! Then I am already half in love.', next: 'e' },
-          d2: { text: 'Good thinking. Holbein paints the truth — I trust his eye.', next: 'e' },
-          e: { text: 'Find out everything you can. Then write to the Duke of Cleves and ask for his sister\'s hand. Make it happen, Cromwell!', set: 'missionGiven' },
+          d1: { text: 'Excellent! Then I am already half in love with her.', next: 'e' },
+          d2: { text: 'A sensible idea. Holbein paints the truth, and I trust his eye completely.', next: 'e' },
+          e: { text: 'Find out everything you can about this alliance. Then write to the Duke of Cleves and ask for his sister\'s hand in marriage. Make it happen, Cromwell! You always do.', set: 'missionGiven' },
         } },
-        waiting: { start: 'a', nodes: { a: { text: 'Well? Have you written to the Duke of Cleves yet? I am not getting any younger, Cromwell!' } } },
+        waiting: { start: 'a', nodes: { a: { text: 'Well? Have you written to the Duke of Cleves yet? I am not getting any younger, Cromwell, and England cannot wait for ever.' } } },
         audience: { start: 'a', nodes: {
-          a: { who: 'narrator', text: 'Months pass. The marriage is agreed. In January 1540, Anne of Cleves arrives in England. Henry rushes to meet her in disguise… but things do not go well.', next: 'b' },
-          b: { text: 'CROMWELL! I have met the Lady Anne. I like her NOT! She is nothing like what people told me!', choices: [
+          a: { who: 'narrator', text: 'Months pass, and the marriage treaty is agreed. In January 1540, Anne of Cleves finally arrives in England. Henry rushes to meet her in disguise, hoping to surprise her… but things do not go at all as he hoped.', next: 'b' },
+          b: { text: 'CROMWELL! I have met the Lady Anne. I like her NOT! She is nothing like what I was told, nothing at all!', choices: [
             { t: '"It must be Holbein\'s fault, Majesty. He made her look too pretty."', fx: { favour: 2, honesty: -8 }, next: 'c1' },
             { t: '"Majesty, the alliance is still very important for England\'s safety."', fx: { favour: -6, honesty: 6 }, next: 'c2' },
-            { t: '"I am very sorry, Majesty. I did my best."', fx: { favour: -2, honesty: 4 }, next: 'c2' },
+            { t: '"I am very sorry, Majesty. I truly did my best."', fx: { favour: -2, honesty: 4 }, next: 'c2' },
           ] },
-          c1: { text: 'Hmph. Maybe. But it was YOUR idea, Cromwell. Not Holbein\'s.', next: 'd' },
-          c2: { text: 'England\'s safety… Yes, yes. I know. I will marry her, because I must. But I am NOT happy.', next: 'd' },
-          d: { text: 'You have put me in this mess, Cromwell. Remember that. Remember it well.', next: 'end' },
-          end: { who: 'narrator', text: 'Your enemies at court are watching closely. Let us see what really happened…', end: 'chapter' },
+          c1: { text: 'Hmph. Perhaps. But it was YOUR idea, Cromwell, not Holbein\'s. You chose her, and you promised me she would please me.', next: 'd' },
+          c2: { text: 'England\'s safety… Yes, yes, I know. I shall marry her, because I must. But I am NOT happy, and everyone will know it.', next: 'd' },
+          d: { text: 'You have put me in this mess, Cromwell. Remember that. Remember it very well.', next: 'end' },
+          end: { who: 'narrator', text: 'As you leave, you notice the Duke of Norfolk watching you with a cold smile. Your enemies at court sense a chance at last. Let us discover what really happened…', end: 'chapter' },
         } },
       },
     },
     {
-      id: 'cranmer', name: 'Archbishop Thomas Cranmer', role: 'Archbishop of Canterbury', look: { robe: '#f0ece2', gown: '#1a1a1a', long: true, hat: 'cap', hatColor: '#111', trim: '#1a1a1a', bg: '#2a3a5a' },
+      id: 'cranmer', name: 'Archbishop Thomas Cranmer', role: 'Archbishop of Canterbury', look: { robe: '#f0ece2', gown: '#1a1a1a', long: true, hat: 'cap', hatColor: '#111', trim: '#1a1a1a', bg: '#2a3a5a', photo: 'cranmer' },
       pos: [13, -25], yaw: -Math.PI / 2, when: (s) => talked(s, 'henry'),
       dialogue: (s) => (talked(s, 'cranmer') ? 'again' : 'main'),
       dialogues: {
         main: { start: 'a', nodes: {
-          a: { text: 'My friend Cromwell! Look — the Great Bible, in ENGLISH, thanks to you. Now every church in England has one, and ordinary people can understand God\'s word.', fact: 'In 1539 the Great Bible was published in English. Cromwell ordered a copy to be placed in every church.', next: 'b' },
-          b: { text: 'Your plan for Cleves is wise. Duke William of Cleves is an enemy of the Emperor. With Cleves as our friend, England will not stand alone.', fact: 'The Duke of Cleves ruled a small German state and was quarrelling with Emperor Charles V. That made him a useful ally for England.', next: 'c' },
-          c: { text: 'But be careful. The Duke of Norfolk and the old Catholic lords hate our changes to the Church. If this marriage fails, they will blame you.', choices: [
+          a: { text: 'My dear friend Cromwell! Look at this: the Great Bible, printed in ENGLISH, thanks to you. Now every parish church in England has a copy, and ordinary people can understand God\'s word for themselves instead of hearing it in Latin.', fact: 'In 1539 the Great Bible was published in English. Cromwell ordered a copy to be placed in every church.', next: 'b' },
+          b: { text: 'Your plan for Cleves is a wise one. Duke William of Cleves is an enemy of the Emperor, and his lands lie in a useful position. With Cleves as our friend, England will not have to stand alone.', fact: 'The Duke of Cleves ruled a small German state and was quarrelling with Emperor Charles V, which made him a useful ally for England.', next: 'c' },
+          c: { text: 'But please be careful. The Duke of Norfolk and the old Catholic lords hate the changes we have made to the Church. If this marriage goes wrong, they will make sure that you take the blame.', choices: [
             { t: '"Let them try. The King trusts me."', fx: { honesty: -2 } },
             { t: '"Thank you, my friend. I will be careful."', fx: { honesty: 4 } },
           ] },
         } },
-        again: { start: 'a', nodes: { a: { text: 'I will pray that the marriage brings the King happiness. He has had so little of it.' } } },
+        again: { start: 'a', nodes: { a: { text: 'I shall pray that this marriage brings the King happiness. He has known so little of it these past few years.' } } },
       },
     },
     {
@@ -73,12 +73,12 @@ export default {
       dialogue: (s) => (talked(s, 'norfolk') ? 'again' : 'main'),
       dialogues: {
         main: { start: 'a', nodes: {
-          a: { text: 'Well, if it isn\'t Master Cromwell. The blacksmith\'s boy, giving orders to dukes. How the world has changed.', fact: 'Rich nobles like the Duke of Norfolk looked down on Cromwell because his family were ordinary working people.', choices: [
-            { t: '"I serve the King, my lord, as you do."', fx: { honesty: 2 }, next: 'b' },
+          a: { text: 'Well, if it isn\'t Master Cromwell. The blacksmith\'s boy, giving orders to dukes and earls. How the world has changed, and not for the better.', fact: 'Rich nobles like the Duke of Norfolk looked down on Cromwell because his family were ordinary working people.', choices: [
+            { t: '"I serve the King, my lord, just as you do."', fx: { honesty: 2 }, next: 'b' },
             { t: '"At least I earned my place, my lord."', fx: { honesty: 4, favour: -2 }, next: 'b' },
           ] },
-          b: { text: 'You have smashed the monasteries and filled the churches with your English Bibles. Many good people hate you for it.', next: 'c' },
-          c: { text: 'And now a German bride for the King? Let us hope she pleases him. If not… well. My young niece, Catherine Howard, has just arrived at court. Such a pretty, cheerful girl.', fact: 'The Duke of Norfolk was the uncle of both Anne Boleyn and Catherine Howard.', choices: [
+          b: { text: 'You have smashed the ancient monasteries and filled the churches with your English Bibles. Many good, God-fearing people hate you for it, Cromwell, and they have long memories.', next: 'c' },
+          c: { text: 'And now you want a German bride for the King? Let us hope she pleases him. If she does not… well. My young niece, Catherine Howard, has just arrived at court. Such a pretty, cheerful girl. The King has already noticed her.', fact: 'The Duke of Norfolk was the uncle of both Anne Boleyn and Catherine Howard.', choices: [
             { t: '"Is that a threat, my lord?"', fx: { honesty: 2 } },
             { t: '"Good day, my lord."', fx: {} },
           ] },
@@ -92,14 +92,14 @@ export default {
       dialogue: (s) => (talked(s, 'monk') ? 'again' : 'main'),
       dialogues: {
         main: { start: 'a', nodes: {
-          a: { text: 'Master Cromwell. You won\'t remember me. I was a monk at an abbey that your men closed down. I lived there for thirty years.', fact: 'Between 1536 and 1540, around 800 monasteries, nunneries and friaries were closed.', next: 'b' },
-          b: { text: 'I was given a small pension, so I can eat. But what about the poor people we fed? The sick we cared for? The children we taught? Who helps them now?', fact: 'Monasteries gave food to the poor, cared for the sick and taught children. When they closed, many people lost this help.', choices: [
-            { t: '"Some monasteries were badly run and very rich. The King needs that money."', fx: { favour: 2, honesty: 2 }, next: 'c' },
-            { t: '"I am sorry. I had not thought about the poor."', fx: { honesty: 6 }, next: 'c' },
+          a: { text: 'Master Cromwell. You will not remember me, but I remember you. I was a monk at an abbey that your officials closed down. I had lived there, praying and working, for thirty years.', fact: 'Between 1536 and 1540, around 800 monasteries, nunneries and friaries were closed.', next: 'b' },
+          b: { text: 'I was given a small pension, so at least I can eat. But what about the poor people we used to feed at our gate? The sick we cared for? The children we taught to read? Who will help them now?', fact: 'Monasteries gave food to the poor, cared for the sick and taught children. When they closed, many people lost this help.', choices: [
+            { t: '"Some monasteries were badly run and very rich. The King needs that money to defend England."', fx: { favour: 2, honesty: 2 }, next: 'c' },
+            { t: '"I am sorry. I had not thought enough about the poor."', fx: { honesty: 6 }, next: 'c' },
           ] },
-          c: { text: 'In the North, thousands marched in protest — the Pilgrimage of Grace, they called it. The King promised to listen… then he executed the leaders.', fact: 'In 1536, around 30,000 people in the North rebelled against the closing of the monasteries. It was called the Pilgrimage of Grace.' },
+          c: { text: 'In the North, tens of thousands of people marched in protest. They called it the Pilgrimage of Grace. The King promised to listen to them… and then he had their leaders executed.', fact: 'In 1536, around 30,000 people in the North rebelled against the closing of the monasteries. It was called the Pilgrimage of Grace.' },
         } },
-        again: { start: 'a', nodes: { a: { text: 'I come here to watch the river. It is peaceful, like my abbey used to be.' } } },
+        again: { start: 'a', nodes: { a: { text: 'I come here to watch the river flow past. It is peaceful, just as my abbey used to be.' } } },
       },
     },
     {
@@ -108,15 +108,15 @@ export default {
       dialogue: (s) => (talked(s, 'holbein') ? 'again' : 'main'),
       dialogues: {
         main: { start: 'a', nodes: {
-          a: { text: 'Ah, Master Cromwell! I have just come back from Germany. Look — my portrait of the Lady Anne of Cleves.', fact: 'Hans Holbein was a German painter who worked for Henry VIII. He painted the most famous portraits of Henry.', next: 'b' },
-          b: { text: 'I painted her face-on, just as I saw her. She is calm and gentle. She does not sing or play music, and she speaks only German — but she is very good at needlework.', fact: 'Anne of Cleves did not speak English when she arrived, but she learned quickly.', next: 'c' },
-          c: { text: 'You know, my great painting of the King makes him look enormous and powerful, standing with his legs wide apart. That is what he wanted people to see!', fact: 'Holbein\'s famous portrait of Henry was designed to make him look strong and powerful.', choices: [
+          a: { text: 'Ah, Master Cromwell! I have only just returned from Germany. Come and look: here is my portrait of the Lady Anne of Cleves.', fact: 'Hans Holbein was a German painter who worked for Henry VIII. He painted the most famous portraits of Henry.', next: 'b' },
+          b: { text: 'I painted her facing straight towards us, exactly as I saw her. She is calm, gentle and dignified. She does not sing or play music, and she speaks only German, but she is extremely skilled at needlework.', fact: 'Anne of Cleves did not speak English when she arrived, but she learned it quickly.', next: 'c' },
+          c: { text: 'You know, my great painting of the King on the palace wall at Whitehall makes him look enormous and powerful, standing with his legs wide apart like a warrior. That is precisely how he wanted the world to see him!', fact: 'Holbein\'s famous portrait of Henry was designed to make him look strong and powerful.', choices: [
             { t: '"So portraits do not always show the plain truth?"', fx: { honesty: 4 }, next: 'd' },
             { t: '"Make sure the Lady Anne looks beautiful, Holbein!"', fx: { honesty: -4 }, next: 'd' },
           ] },
-          d: { text: 'A painter shows what his master wishes, Master Cromwell. Remember that when you look at any portrait.' },
+          d: { text: 'A painter shows what his patron wishes to be seen, Master Cromwell. Remember that whenever you look at any portrait, including mine.' },
         } },
-        again: { start: 'a', nodes: { a: { text: 'Mind the paint! It is still wet.' } } },
+        again: { start: 'a', nodes: { a: { text: 'Careful, the paint is still wet!' } } },
       },
     },
     {
@@ -125,10 +125,10 @@ export default {
       dialogue: (s) => (talked(s, 'cook') ? 'again' : 'main'),
       dialogues: {
         main: { start: 'a', nodes: {
-          a: { text: 'Master Cromwell. I will never forget October 1537. Prince Edward was born here, in this very palace! The bells rang and we cooked a feast for days.', fact: 'Prince Edward was born at Hampton Court on 12 October 1537. He was christened in the Chapel Royal.', next: 'b' },
-          b: { text: 'And then, just twelve days later, poor Queen Jane died. The King wore black for months. It was the saddest time I can remember.', fact: 'Jane Seymour died at Hampton Court twelve days after Edward\'s birth. She was the only one of Henry\'s wives to be buried with him.' },
+          a: { text: 'Master Cromwell. I shall never forget October 1537. Prince Edward was born here, in this very palace! The bells rang all over England, and we cooked feasts for days on end.', fact: 'Prince Edward was born at Hampton Court on 12 October 1537. He was christened in the Chapel Royal.', next: 'b' },
+          b: { text: 'And then, just twelve days later, poor Queen Jane died. The King wore black for months afterwards. It was the saddest time I can remember in all my years in this kitchen.', fact: 'Jane Seymour died at Hampton Court twelve days after Edward\'s birth. She was the only one of Henry\'s wives to be buried beside him.' },
         } },
-        again: { start: 'a', nodes: { a: { text: 'The King eats more than ever these days. I need bigger pies!' } } },
+        again: { start: 'a', nodes: { a: { text: 'The King eats more than ever these days. I shall need bigger pie dishes!' } } },
       },
     },
   ],
@@ -136,36 +136,36 @@ export default {
   sources: [
     {
       id: 'valor', name: 'The Valor Ecclesiasticus', kind: 'book', pos: [7.2, 18.2], area: 'Your Study',
-      date: '1535', origin: 'A huge survey ordered by Cromwell. Inspectors visited every church and monastery to write down what they owned.',
+      date: '1535', origin: 'A huge survey ordered by Cromwell. Officials visited every church and monastery to write down exactly what it owned.',
       text: 'Its Latin name means "the value of the Church". It lists the lands, money and treasures of every monastery in England.',
       about: 'Cromwell\'s inspectors also wrote reports claiming that many monks were lazy or badly behaved. Some of these reports were exaggerated to help the King.',
       question: { q: 'Why did Cromwell want to know how rich the monasteries were?', options: [
-        { t: 'So the King could take their wealth.', ok: true, why: 'Exactly. The King took the monasteries\' land and treasure — and used some of it to build forts to defend England.' },
-        { t: 'So he could give them more money.', ok: false, why: 'No — the money went the other way!' },
+        { t: 'So the King could take their wealth.', ok: true, why: 'Exactly. The King took the monasteries\' land and treasure, and used some of it to build forts to defend England.' },
+        { t: 'So he could give them more money.', ok: false, why: 'No: the money went the other way!' },
         { t: 'So he could become a monk.', ok: false, why: 'Cromwell had no plans to become a monk!' },
       ] },
     },
     {
-      id: 'cleves', name: 'Portrait of Anne of Cleves', kind: 'portrait', pos: [37.3, 6], rot: -Math.PI / 2, area: 'Presence Chamber',
+      id: 'cleves', name: 'Portrait of Anne of Cleves', kind: 'portrait', pos: [37.3, 6], rot: -Math.PI / 2, area: 'Presence Chamber', img: 'cleves',
       portrait: ['#2a4a2a', '#6b3a1a', '#e9e0c9'],
       date: '1539', origin: 'Painted by Hans Holbein in Germany, to show the King what his bride looked like.',
       text: 'A calm young woman in a rich red dress and a pearl-covered headdress, looking straight at the viewer.',
-      about: 'Henry agreed to marry Anne after seeing this portrait. When they met, he said she did not look like what he had been told. Was the portrait wrong? Historians still argue! Many think Holbein\'s painting was fair.',
+      about: 'Henry agreed to marry Anne after seeing this portrait. When they met, he complained that she did not look as he had been told. Was the portrait wrong? Historians still argue! Many think Holbein\'s painting was fair.',
       question: { q: 'Why should historians be careful with portraits?', options: [
-        { t: 'Painters often showed people the way their master wanted them to look.', ok: true, why: 'Yes! Portraits are useful sources, but we must ask who made them and why.' },
+        { t: 'Painters often showed people the way their patron wanted them to look.', ok: true, why: 'Yes! Portraits are useful sources, but we must ask who made them and why.' },
         { t: 'Portraits are always completely accurate, like photographs.', ok: false, why: 'Paintings are made by people, who make choices about what to show.' },
-        { t: 'Tudor paint was invisible.', ok: false, why: 'Ha! No — Tudor paintings can still be seen today.' },
+        { t: 'Tudor paint was invisible.', ok: false, why: 'Ha! No: Tudor paintings can still be seen today.' },
       ] },
     },
     {
       id: 'ha', name: 'The "HA" Initials', kind: 'carving', pos: [-22.6, -19], area: 'Great Hall',
       date: '1532–1535', origin: 'Carved into the wood of the brand-new Great Hall, while Henry was in love with Anne Boleyn.',
-      text: 'The letters H and A — for Henry and Anne — joined together, carved and painted gold.',
+      text: 'The letters H and A, for Henry and Anne, joined together, carved and painted gold.',
       about: 'After Anne was executed in 1536, carpenters were ordered to change the initials. But they missed some! You can still see "H and A" in the Great Hall at Hampton Court today.',
       question: { q: 'What does this carving tell historians?', options: [
-        { t: 'The Great Hall was built while Henry was with Anne Boleyn.', ok: true, why: 'Well done! Buildings can be sources too — they tell us when things happened and who was important.' },
-        { t: 'Henry did not like Anne Boleyn.', ok: false, why: 'The opposite — he put her initials all over his new hall!' },
-        { t: 'Anne Boleyn was a carpenter.', ok: false, why: 'No — the carvings were made by the King\'s craftsmen.' },
+        { t: 'The Great Hall was built while Henry was with Anne Boleyn.', ok: true, why: 'Well done! Buildings can be sources too: they tell us when things happened and who was important.' },
+        { t: 'Henry did not like Anne Boleyn.', ok: false, why: 'The opposite: he put her initials all over his new hall!' },
+        { t: 'Anne Boleyn was a carpenter.', ok: false, why: 'No: the carvings were made by the King\'s craftsmen.' },
       ] },
     },
   ],
@@ -185,19 +185,19 @@ export default {
 
   letter: {
     to: 'Duke William of Cleves', title: 'A Letter to the Duke of Cleves',
-    intro: 'Write to Duke William of Cleves to arrange a marriage between his sister Anne and King Henry. Be persuasive and polite — and use your evidence!',
+    intro: 'Write to Duke William of Cleves to arrange a marriage between his sister Anne and King Henry. Be persuasive and polite, use your evidence, and then sign the letter with your quill!',
     parts: [
       { label: 'Greeting', options: [
         { t: 'To the most noble Duke William of Cleves,', score: 2, why: 'Polite and correct.' },
         { t: 'Oi, Duke!', score: 0, why: 'Not the way to start a royal marriage!' },
       ] },
       { label: 'Why an alliance?', options: [
-        { t: 'A friendship between England and Cleves will protect us both from the Emperor.', score: 2, needs: 'flag:talked_cranmer', why: 'Excellent — this was the real reason for the marriage.' },
+        { t: 'A friendship between England and Cleves will protect us both from the Emperor.', score: 2, needs: 'flag:talked_cranmer', why: 'Excellent: this was the real reason for the marriage.' },
         { t: 'England is very rich now, for we have taken the treasures of the monasteries.', score: 1, needs: 'valor', why: 'True, but boastful. Not very persuasive!' },
         { t: 'The King needs a wife, and any wife will do.', score: 0, why: 'Insulting to the Duke\'s sister!' },
       ] },
       { label: 'A compliment', options: [
-        { t: 'Master Holbein\'s portrait of the Lady Anne has greatly pleased His Majesty.', score: 2, needs: 'cleves', why: 'Good — it shows the King is happy with the match.' },
+        { t: 'Master Holbein\'s portrait of the Lady Anne has greatly pleased His Majesty.', score: 2, needs: 'cleves', why: 'Good: it shows the King is happy with the match.' },
         { t: 'We hear the Lady Anne is very skilled at needlework.', score: 1, needs: 'flag:talked_holbein', why: 'True and kind, if not very exciting!' },
       ] },
       { label: 'Your request', options: [
@@ -209,24 +209,29 @@ export default {
         { t: 'Tom.', score: 0, why: 'Much too friendly for a letter between two countries!' },
       ] },
     ],
-    sent: 'The letter is sealed and sent across the sea to Germany. Soon the marriage treaty is signed!',
+    sent: 'The letter is sealed and sent across the sea to Germany. Soon afterwards, the marriage treaty is signed!',
   },
 
   history: [
-    { year: '1540', icon: '💍', title: 'A disappointing wedding', text: 'Henry married Anne of Cleves in January 1540. When they first met, Henry was in disguise and Anne did not recognise him — some historians think this embarrassed him. Henry said, "I like her not."' },
-    { year: '1540', icon: '🏡', title: 'The King\'s beloved sister', text: 'Just six months later, the marriage was annulled. Anne wisely agreed. She was given houses, money and the title "the King\'s beloved sister". She lived longer than any of Henry\'s other wives.' },
-    { year: '1540', icon: '⚔️', title: 'Cromwell is arrested', text: 'Cromwell\'s enemies, led by the Duke of Norfolk, told the King that Cromwell was a traitor. At a council meeting in June, Cromwell was arrested. Norfolk tore the badge of honour from his neck.' },
+    { year: '1540', icon: '💍', title: 'A disappointing wedding', text: 'Henry married Anne of Cleves in January 1540. When they first met, Henry was in disguise and Anne did not recognise him; some historians think this embarrassed him. Afterwards he said, "I like her not."' },
+    { year: '1540', icon: '🏡', title: 'The King\'s beloved sister', text: 'Just six months later, the marriage was annulled. Anne wisely agreed. She was given houses, money and the title "the King\'s beloved sister", and she lived longer than any of Henry\'s other wives.' },
+    { year: '1540', icon: '⚔️', title: 'Cromwell is arrested', text: 'Cromwell\'s enemies, led by the Duke of Norfolk, told the King that Cromwell was a traitor and a heretic. At a council meeting in June, Cromwell was arrested. Norfolk tore the badge of honour from his neck.' },
     { year: '1540', icon: '🕯️', title: 'Executed', text: 'On 28 July 1540, Thomas Cromwell was executed. On the very same day, Henry married Norfolk\'s niece, Catherine Howard.' },
     { year: '1541', icon: '😔', title: 'Regret', text: 'Within a year, Henry said that he had been tricked into killing the most faithful servant he had ever had.' },
   ],
   fate: 'The Anne of Cleves marriage failed. Cromwell\'s enemies turned the King against him, and he was executed in 1540.',
 
   quiz: [
-    { q: 'What did Henry close down and take money from?', options: ['Schools', 'Monasteries', 'Castles'], answer: 1, why: 'Around 800 monasteries were closed between 1536 and 1540.' },
-    { q: 'Which wife gave Henry a son, Edward?', options: ['Jane Seymour', 'Anne of Cleves', 'Anne Boleyn'], answer: 0, why: 'Jane Seymour gave birth to Edward in 1537.' },
-    { q: 'Where was Prince Edward born?', options: ['The Tower of London', 'Hampton Court Palace', 'Rome'], answer: 1, why: 'Edward was born at Hampton Court on 12 October 1537.' },
-    { q: 'Why did Henry agree to marry Anne of Cleves?', options: ['For an alliance — and after seeing her portrait', 'She was his cousin', 'She was the Pope\'s daughter'], answer: 0, why: 'England needed allies, and Henry liked Holbein\'s portrait.' },
-    { q: 'What happened to Thomas Cromwell?', options: ['He became Pope', 'He was executed in 1540', 'He married Anne of Cleves'], answer: 1, why: 'His enemies turned Henry against him.' },
+    { type: 'mc', skill: 'retrieve', q: 'What did Henry close down and take money from?', options: ['Schools', 'Monasteries', 'Castles'], answer: 1, why: 'Around 800 monasteries were closed between 1536 and 1540.' },
+    { type: 'gap', skill: 'retrieve', text: 'Jane Seymour gave birth to Prince ___ at Hampton Court in 1537, but she died ___ days later.', bank: ['Edward', 'twelve', 'Arthur', 'forty'], answers: ['Edward', 'twelve'], why: 'Edward was born on 12 October 1537; Jane died on 24 October.' },
+    { type: 'match', skill: 'vocab', q: 'Match each word to its meaning.', pairs: [['monastery', 'A building where monks lived, worked and prayed'], ['alliance', 'An agreement between countries to help each other'], ['pension', 'Money paid regularly to someone after they stop working']], why: 'All three words appear in Cromwell\'s story.' },
+    { type: 'mc', skill: 'vocab', q: 'Holbein says, "A painter shows what his patron wishes to be seen." What is a patron?', options: ['The person who pays an artist for their work', 'A type of paintbrush', 'A famous building'], answer: 0, why: 'Holbein\'s patron was the King, who paid him and told him what he wanted.' },
+    { type: 'mc', skill: 'infer', q: 'Norfolk mentions that his niece, Catherine Howard, "has just arrived at court". Why might he say this to Cromwell?', options: ['He is hinting that Catherine could replace Anne of Cleves if the marriage fails', 'He wants Cromwell to teach her to read', 'He is complaining that the court is too crowded'], answer: 0, why: 'Norfolk hoped his niece would catch the King\'s eye, which is exactly what happened.' },
+    { type: 'mc', skill: 'infer', q: 'Why might some of Cromwell\'s reports about lazy, badly behaved monks be unreliable?', options: ['They were written by monks', 'The inspectors wanted to give the King a reason to close the monasteries', 'They were written in German'], answer: 1, why: 'The inspectors knew what answer the King and Cromwell wanted.' },
+    { type: 'order', skill: 'sequence', q: 'Put these events in the order they happened.', items: ['Anne Boleyn is executed (1536)', 'Prince Edward is born (1537)', 'Henry marries Anne of Cleves (January 1540)', 'Cromwell is executed (July 1540)'], why: 'In just four years, Henry\'s court changed completely.' },
+    { type: 'write', skill: 'explain', q: 'Explain why the Dissolution of the Monasteries was good for the King but bad for many ordinary people.', model: 'It was good for the King because he took the monasteries\' land, money and treasure, which made him much richer and paid for defences. It was bad for ordinary people because the monasteries had fed the poor, cared for the sick and taught children, and that help disappeared.', checklist: ['I explained how the King gained (money, land or treasure)', 'I explained how ordinary people lost out (food, care or schooling)', 'I used "because" or "but" to compare'] },
+    { type: 'write', skill: 'predict', q: 'Henry has just married young Catherine Howard. Predict what you think might happen next, and give a reason.', model: 'I predict that the marriage might go wrong, because Henry is much older than Catherine and his marriages have often ended badly. Her powerful family, the Howards, also have many enemies at court.', checklist: ['I made a clear prediction', 'I gave a reason using what I know so far', 'I used "because"'] },
+    { type: 'mc', skill: 'summarise', q: 'Which sentence is the BEST summary of this chapter?', options: ['Cromwell closed the monasteries and arranged the King\'s marriage to Anne of Cleves, but when the marriage failed, his enemies brought him down.', 'Holbein painted a portrait of Anne of Cleves.', 'Henry liked to eat pies.'], answer: 0, why: 'A good summary covers the most important events, not just one detail.' },
   ],
   reflection: 'Was Cromwell a good advisor or a bad one? Think about the monasteries, the English Bible and the Anne of Cleves marriage. Explain your answer.',
 };

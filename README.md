@@ -17,7 +17,7 @@ It runs in **Safari on iPad**, with nothing to install, no logins and no data co
 | 3 | **Thomas Cromwell** | 1539–40 | Find allies, money and a new wife | Jane Seymour, Anne of Cleves, (Anne Boleyn's fall) | Dissolution of the monasteries; English Bible; portraits as sources |
 | 4 | **Archbishop Thomas Cranmer** | 1541–47 | Tell the King terrible news about his Queen | Catherine Howard, Catherine Parr | Weighing evidence and bias; Henry's last years; Edward VI |
 
-Each chapter takes about **25–35 minutes**, roughly one lesson. Chapters unlock in order.
+Each chapter takes about **35–45 minutes**, roughly one lesson, or longer if pupils hunt for every Inventory object. Chapters unlock in order. If time is short, the quiz can be finished at the start of the next lesson, because progress is saved.
 
 ### What pupils do in each chapter
 1. **Meet the King** in his Privy Chamber and receive a task.
@@ -30,6 +30,32 @@ Each chapter takes about **25–35 minutes**, roughly one lesson. Chapters unloc
 6. **Report to the King**, then see **"What really happened"**, the updated **six wives tracker**, a 5-question **quiz** and a printable **Royal Report**.
 
 Palace staff (a Yeoman of the Guard, a page, a spit boy, a gardener and a musician) share bonus facts about Tudor life. The Great Kitchens and the toilet that seated 28 tend to be favourites.
+
+### 🏺 The King's Inventory: 55 Tudor objects to discover
+Sparkles ✨ mark Tudor objects and features hidden all over the palace, for example a trencher, the salt cellar, a sugar "subtlety", the spice chest, the King's armour, his velvet close stool, a hornbook, Tudor coins, a falcon, an archery butt and the King's Beasts on the moat bridge. Pupils tap one (or walk up to it and press the gold button) to read about it and add it to their **Inventory**. Many objects include a **real photograph or painting**. The count (e.g. *23/55*) shows in the corner of the screen and on every Royal Report. Some objects only appear in the chapters when they existed (for example, the astronomical clock was made in 1540), which gives pupils a reason to replay.
+
+Henry VIII really did keep an inventory: the list of his possessions made after he died runs to around 17,000 items.
+
+### ✒️ Quill and ink (Apple Pencil)
+- **Sign your letters.** Every letter must be signed with the quill before it can be sealed.
+- **Write like a Tudor.** The *Quill and Inkpot* in the study lets pupils trace Henry VIII's real "Henry R" signature, then practise their own signature, which then appears on their reports.
+- **Written quiz answers.** Explanation, summary and prediction questions are answered in handwriting.
+
+The quill responds to Apple Pencil pressure and writes thick and thin like a real nib. The ink runs out as you write, so pupils must **dip the quill** in the inkpot, and a fresh dip sometimes leaves a blot! Fingers work too. While a Pencil is being used, palm touches are ignored. A **"type instead"** option is available for pupils who need it.
+
+### 🎓 Quizzes with a range of reading skills
+Each chapter ends with a 10-question quiz. Every question is labelled with the reading skill it practises (in the spirit of VIPERS): 📖 Retrieval, 🔍 Inference, 🔤 Vocabulary, 🔮 Prediction, 💡 Explanation, 📝 Summary and 🧩 Sequencing. The question types are:
+- multiple choice;
+- **fill the gap** using a word bank;
+- **match words to meanings**;
+- **put events in order**;
+- **written answers** with the quill. Pupils then compare their answer with a model answer and tick a self-check list. Their handwriting appears on the Royal Report, so you can see what they actually wrote.
+
+### 📚 Word Bank
+Tricky words (for example *annul*, *dispensation*, *heir*, *treason*, *conscience*, *biased*) are underlined throughout the game. Pupils tap one to see a child-friendly definition, which can be read aloud. All the words are collected in the **Word Bank** tab of the notebook.
+
+### 🏰 The real Hampton Court
+The 3D palace now includes many real features: the **moat and bridge with the King's Beasts**, the **Great Gatehouse** with Henry's coat of arms and an oriel window, the decorated **twisted chimneys**, **Wolsey's terracotta roundels** of Roman emperors, **Wolsey's coat of arms** and the **bell turret** on Anne Boleyn's Gateway, **leaded diamond-pane windows** and **heraldic stained glass**. **Real Tudor paintings** hang where they belong, such as *The Family of Henry VIII* and *The Field of the Cloth of Gold*, which both hang at Hampton Court today. Characters are shown with their **real portraits** by Holbein and others. The notebook's **Palace** tab has photographs of each part of Hampton Court as it is today.
 
 ### Historical touches built into the palace
 - The **Great Hall** has scaffolding in Chapter 2 (it was rebuilt from 1532 to 1535) and Henry and Anne's carved **"HA" initials** from Chapter 3.
@@ -90,6 +116,9 @@ Curriculum links (KS2 National Curriculum, History): chronological understanding
 
 ---
 
+## Picture credits
+Real paintings and photographs come from **Wikimedia Commons** and are included in `assets/img/`. Tudor paintings are in the public domain. Modern photographs are used under Creative Commons licences (CC BY / CC BY-SA), and each photo is credited where it appears in the game, in **Settings → Picture credits**, and in `assets/img/credits.json`.
+
 ## A note on historical accuracy
 The game simplifies events and the words in sources for 10–11 year olds. It notes this on every source card. Conversations with characters are imagined, but they are based on real events, real people's known views and some famous real quotations (for example More's *"the King's good servant, but God's first"* and Wolsey's *"If I had served God as diligently as I have done the King…"*). Every chapter ends by showing what really happened, whatever choices the pupil made.
 
@@ -104,4 +133,5 @@ Some things were simplified on purpose:
 - Plain HTML, CSS and JavaScript modules with no build step. 3D graphics use [three.js](https://threejs.org) r160 (MIT licence), included in `vendor/`.
 - All textures are drawn in code, so there are no image files to load.
 - `js/world.js` builds the palace, `js/characters.js` builds the people, and `js/main.js` is the game engine.
-- **All historical content is in `js/content/`**: one file per chapter plus `common.js`. You can edit dialogue, sources, letters and quizzes there without touching the engine.
+- **All historical content is in `js/content/`**: one file per chapter, plus `common.js` (wives, timeline, palace staff), `objects.js` (the 55 Inventory objects and the paintings) and `glossary.js` (the Word Bank). You can edit dialogue, sources, letters, objects and quizzes there without touching the engine.
+- `js/quill.js` is the handwriting pad, `js/props.js` builds the 3D objects, and `js/main.js` is the game engine.

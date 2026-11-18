@@ -1,0 +1,219 @@
+{
+ "family": {
+  "file": "family.jpg",
+  "title": "Family of Henry VIII c 1545.jpg",
+  "license": "Public domain",
+  "artist": "Unknown artist, c. 1545 (Royal Collection, Hampton Court)",
+  "source": "https://commons.wikimedia.org/wiki/File:Family_of_Henry_VIII_c_1545.jpg"
+ },
+ "clothofgold": {
+  "file": "clothofgold.jpg",
+  "title": "British - Field of the Cloth of Gold - Google Art Project.jpg",
+  "license": "Public domain",
+  "artist": "British School, c. 1545 (Royal Collection, Hampton Court)",
+  "source": "https://commons.wikimedia.org/wiki/File:British_-_Field_of_the_Cloth_of_Gold_-_Google_Art_Project.jpg"
+ },
+ "henry": {
+  "file": "henry.jpg",
+  "title": "Portrait of King Henry VIII of England (1491–1547), by Hans Holbein the Younger (Thyssen-Bornemisza Museum, Madrid).jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, c. 1537",
+  "source": "https://commons.wikimedia.org/wiki/File:Portrait_of_King_Henry_VIII_of_England_%281491%E2%80%931547%29%2C_by_Hans_Holbein_the_Younger_%28Thyssen-Bornemisza_Museum%2C_Madrid%29.jpg"
+ },
+ "wolsey": {
+  "file": "wolsey.jpg",
+  "title": "Cardinal Thomas Wolsey.jpg",
+  "license": "Public domain",
+  "artist": "Unknown artist",
+  "source": "https://commons.wikimedia.org/wiki/File:Cardinal_Thomas_Wolsey.jpg"
+ },
+ "more": {
+  "file": "more.jpg",
+  "title": "Portrait of Thomas More by Hans Holbein d. J. in the Frick Collection.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1527",
+  "source": "https://commons.wikimedia.org/wiki/File:Portrait_of_Thomas_More_by_Hans_Holbein_d._J._in_the_Frick_Collection.jpg"
+ },
+ "cromwell": {
+  "file": "cromwell.jpg",
+  "title": "Hans Holbein d. J. - Portrait of Thomas Cromwell - WGA11548.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1532–33",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Portrait_of_Thomas_Cromwell_-_WGA11548.jpg"
+ },
+ "cranmer": {
+  "file": "cranmer.jpg",
+  "title": "Thomas Cranmer by Gerlach Flicke (cropped 3-4).jpg",
+  "license": "Public domain",
+  "artist": "Gerlach Flicke, 1545",
+  "source": "https://commons.wikimedia.org/wiki/File:Thomas_Cranmer_by_Gerlach_Flicke_%28cropped_3-4%29.jpg"
+ },
+ "charles": {
+  "file": "charles.jpg",
+  "title": "Barend van Orley - Portrait of Charles V - Google Art Project.jpg",
+  "license": "Public domain",
+  "artist": "Bernard van Orley, c. 1516",
+  "source": "https://commons.wikimedia.org/wiki/File:Barend_van_Orley_-_Portrait_of_Charles_V_-_Google_Art_Project.jpg"
+ },
+ "aragon": {
+  "file": "aragon.jpg",
+  "title": "Catherine of aragon 1525.jpg",
+  "license": "Public domain",
+  "artist": "Unknown artist, c. 1525",
+  "source": "https://commons.wikimedia.org/wiki/File:Catherine_of_aragon_1525.jpg"
+ },
+ "boleyn": {
+  "file": "boleyn.jpg",
+  "title": "Anne Boleyn from NPG.jpg",
+  "license": "Public domain",
+  "artist": "Unknown artist, late 16th century copy (National Portrait Gallery)",
+  "source": "https://commons.wikimedia.org/wiki/File:Anne_Boleyn_from_NPG.jpg"
+ },
+ "seymour": {
+  "file": "seymour.jpg",
+  "title": "Hans Holbein the Younger - Jane Seymour, Queen of England - Google Art Project.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1536–37",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_the_Younger_-_Jane_Seymour%2C_Queen_of_England_-_Google_Art_Project.jpg"
+ },
+ "cleves": {
+  "file": "cleves.jpg",
+  "title": "Portrait Anne of Cleves by Hans Holbein the Younger (Louvre).jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1539",
+  "source": "https://commons.wikimedia.org/wiki/File:Portrait_Anne_of_Cleves_by_Hans_Holbein_the_Younger_%28Louvre%29.jpg"
+ },
+ "howard": {
+  "file": "howard.jpg",
+  "title": "Hans Holbein the Younger - Portrait of a Lady, perhaps Katherine Howard (Royal Collection).JPG",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, c. 1540",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_the_Younger_-_Portrait_of_a_Lady%2C_perhaps_Katherine_Howard_%28Royal_Collection%29.JPG"
+ },
+ "parr": {
+  "file": "parr.jpg",
+  "title": "Catherine Parr, attributed to Master John.jpg",
+  "license": "Public domain",
+  "artist": "Attributed to Master John, c. 1545",
+  "source": "https://commons.wikimedia.org/wiki/File:Catherine_Parr%2C_attributed_to_Master_John.jpg"
+ },
+ "greatbible": {
+  "file": "greatbible.jpg",
+  "title": "Great Bible 1539.jpg",
+  "license": "Public domain",
+  "artist": "Title page of the Great Bible, 1539",
+  "source": "https://commons.wikimedia.org/wiki/File:Great_Bible_1539.jpg"
+ },
+ "utopia": {
+  "file": "utopia.jpg",
+  "title": "Thomas More Utopia 1516 VTOPIAE INSVLAE FIGVRA (Bibliothèque Mazarine).jpg",
+  "license": "Public domain",
+  "artist": "Woodcut from the first edition of Utopia, 1516",
+  "source": "https://commons.wikimedia.org/wiki/File:Thomas_More_Utopia_1516_VTOPIAE_INSVLAE_FIGVRA_%28Biblioth%C3%A8que_Mazarine%29.jpg"
+ },
+ "signature": {
+  "file": "signature.png",
+  "title": "Henry VIII Sig.svg",
+  "license": "Public domain",
+  "artist": "Signature of Henry VIII (traced by Connormah)",
+  "source": "https://commons.wikimedia.org/wiki/File:Henry_VIII_Sig.svg"
+ },
+ "westfront": {
+  "file": "westfront.jpg",
+  "title": "Hampton Court Palace, west front - geograph.org.uk - 7636187.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Stephen Craven",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Palace%2C_west_front_-_geograph.org.uk_-_7636187.jpg"
+ },
+ "clock": {
+  "file": "clock.jpg",
+  "title": "Hampton Court Astrological Clock.jpg",
+  "license": "CC BY 2.0",
+  "artist": "Mike Cattell",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Astrological_Clock.jpg"
+ },
+ "greathall": {
+  "file": "greathall.jpg",
+  "title": "Hampton Court Palace Great Hall c1890.jpg",
+  "license": "Public domain",
+  "artist": "Unknown photographer, c. 1890",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Palace_Great_Hall_c1890.jpg"
+ },
+ "chimneys": {
+  "file": "chimneys.jpg",
+  "title": "Chimneys, Hampton Court Palace - geograph.org.uk - 6135749.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Andrew Curtis",
+  "source": "https://commons.wikimedia.org/wiki/File:Chimneys%2C_Hampton_Court_Palace_-_geograph.org.uk_-_6135749.jpg"
+ },
+ "beast": {
+  "file": "beast.jpg",
+  "title": "Heraldic beast, Hampton Court-geograph-2588873-by-Philip-Halling.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Philip Halling",
+  "source": "https://commons.wikimedia.org/wiki/File:Heraldic_beast%2C_Hampton_Court-geograph-2588873-by-Philip-Halling.jpg"
+ },
+ "privygarden": {
+  "file": "privygarden.jpg",
+  "title": "Privy Garden, Hampton Court - geograph.org.uk - 6957176.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Paul Harrop",
+  "source": "https://commons.wikimedia.org/wiki/File:Privy_Garden%2C_Hampton_Court_-_geograph.org.uk_-_6957176.jpg"
+ },
+ "armour": {
+  "file": "armour.jpg",
+  "title": "Henry VIII's 1540 armour.jpg",
+  "license": "CC BY 4.0",
+  "artist": "Matt Brown",
+  "source": "https://commons.wikimedia.org/wiki/File:Henry_VIII%27s_1540_armour.jpg"
+ },
+ "roundel": {
+  "file": "roundel.jpg",
+  "title": "Roundel by Giovanni da Maiano, c. 1521, glazed terracotta - Hampton Court Palace - London, UK - DSC07130.jpg",
+  "license": "Public domain",
+  "artist": "Daderot",
+  "source": "https://commons.wikimedia.org/wiki/File:Roundel_by_Giovanni_da_Maiano%2C_c._1521%2C_glazed_terracotta_-_Hampton_Court_Palace_-_London%2C_UK_-_DSC07130.jpg"
+ },
+ "groat": {
+  "file": "groat.jpg",
+  "title": "Post Medieval Coin , Henry VIII Groat (obverse) (FindID 590161).jpg",
+  "license": "CC BY-SA 4.0",
+  "artist": "The Portable Antiquities Scheme",
+  "source": "https://commons.wikimedia.org/wiki/File:Post_Medieval_Coin_%2C_Henry_VIII_Groat_%28obverse%29_%28FindID_590161%29.jpg"
+ },
+ "hornbook": {
+  "file": "hornbook.jpg",
+  "title": "Hornbook-Silver.jpg",
+  "license": "Public domain",
+  "artist": "Unknown",
+  "source": "https://commons.wikimedia.org/wiki/File:Hornbook-Silver.jpg"
+ },
+ "gateway": {
+  "file": "gateway.jpg",
+  "title": "Hampton Court Palace, Anne Boleyn's Gateway - geograph.org.uk - 2144907.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "N Chadwick",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Palace%2C_Anne_Boleyn%27s_Gateway_-_geograph.org.uk_-_2144907.jpg"
+ },
+ "kitchen": {
+  "file": "kitchen.jpg",
+  "title": "Hampton Court Palace - kitchen fireplace - geograph.org.uk - 5627443.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "N Chadwick",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Palace_-_kitchen_fireplace_-_geograph.org.uk_-_5627443.jpg"
+ },
+ "basecourt": {
+  "file": "basecourt.jpg",
+  "title": "Hampton Court Palace - Base Court - geograph.org.uk - 5627426.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "N Chadwick",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_Palace_-_Base_Court_-_geograph.org.uk_-_5627426.jpg"
+ },
+ "chapel": {
+  "file": "chapel.jpg",
+  "title": "Ceiling Chapel Royal Hampton Court 8563138206b.jpg",
+  "license": "CC BY-SA 2.0",
+  "artist": "Jody Bowie",
+  "source": "https://commons.wikimedia.org/wiki/File:Ceiling_Chapel_Royal_Hampton_Court_8563138206b.jpg"
+ }
+}

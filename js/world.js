@@ -6,26 +6,29 @@
 //   South of Clock Court: the Advisor's Study; south-east: the Privy Garden by the River Thames
 import * as THREE from '../vendor/three.module.min.js';
 import { Builder } from './builder.js';
+import { buildProp } from './props.js';
 import * as TX from './textures.js';
 
 export const AREAS = [
-  { id: 'base', name: 'Base Court', x1: -60, z1: -15, x2: -30, z2: 15, kind: 'court',
+  { id: 'westfront', name: 'The West Front', x1: -97, z1: -30, x2: -60, z2: 30, kind: 'outside', photo: 'westfront',
+    blurb: 'The grand entrance. Visitors crossed the moat by a bridge lined with stone beasts holding the King\'s coats of arms, then passed through the Great Gatehouse.' },
+  { id: 'base', photo: 'basecourt', name: 'Base Court', x1: -60, z1: -15, x2: -30, z2: 15, kind: 'court',
     blurb: 'The first courtyard visitors enter. Its rooms were lodgings for courtiers — Hampton Court had over 1,000 rooms!' },
-  { id: 'clock', name: 'Clock Court', x1: -30, z1: -15, x2: 26, z2: 15, kind: 'court',
+  { id: 'clock', photo: 'clock', name: 'Clock Court', x1: -30, z1: -15, x2: 26, z2: 15, kind: 'court',
     blurb: 'The inner courtyard at the heart of the palace. Its gateway is called Anne Boleyn\'s Gateway.' },
-  { id: 'hall', name: 'Great Hall', x1: -24, z1: -35, x2: 6, z2: -15, kind: 'room',
+  { id: 'hall', photo: 'greathall', name: 'Great Hall', x1: -24, z1: -35, x2: 6, z2: -15, kind: 'room',
     blurb: 'Where hundreds of courtiers ate together. Henry VIII rebuilt it between 1532 and 1535 with a magnificent hammerbeam roof.' },
-  { id: 'kitchens', name: 'Great Kitchens', x1: -24, z1: -55, x2: 6, z2: -35, kind: 'room',
+  { id: 'kitchens', photo: 'kitchen', name: 'Great Kitchens', x1: -24, z1: -55, x2: 6, z2: -35, kind: 'room',
     blurb: 'Over 200 people worked here, cooking two meals a day for around 600 people at court.' },
-  { id: 'chapel', name: 'Chapel Royal', x1: 6, z1: -35, x2: 26, z2: -15, kind: 'room',
+  { id: 'chapel', photo: 'chapel', name: 'Chapel Royal', x1: 6, z1: -35, x2: 26, z2: -15, kind: 'room',
     blurb: 'The King\'s own chapel, with a ceiling painted blue and covered in golden stars.' },
-  { id: 'presence', name: 'Presence Chamber', x1: 26, z1: -15, x2: 38, z2: 15, kind: 'room',
+  { id: 'presence', photo: 'armour', name: 'Presence Chamber', x1: 26, z1: -15, x2: 38, z2: 15, kind: 'room',
     blurb: 'Where important visitors waited to be "in the presence" of the King.' },
-  { id: 'privy', name: 'Privy Chamber', x1: 38, z1: -15, x2: 50, z2: 15, kind: 'room',
+  { id: 'privy', photo: 'henry', name: 'Privy Chamber', x1: 38, z1: -15, x2: 50, z2: 15, kind: 'room',
     blurb: 'The King\'s private rooms. Only his closest servants and advisors were allowed in.' },
   { id: 'study', name: 'Your Study', x1: -6, z1: 15, x2: 10, z2: 27, kind: 'room',
     blurb: 'Your private office, with your writing desk. Come here to write letters.' },
-  { id: 'garden', name: 'Privy Garden', x1: 26, z1: 15, x2: 60, z2: 50, kind: 'garden',
+  { id: 'garden', photo: 'privygarden', name: 'Privy Garden', x1: 26, z1: 15, x2: 60, z2: 50, kind: 'garden',
     blurb: 'The King\'s private garden beside the River Thames, with painted posts topped by heraldic beasts.' },
 ];
 
@@ -64,9 +67,12 @@ export function buildWorld(scene, era) {
     hedge: new THREE.MeshLambertMaterial({ color: 0x2e5a26 }),
     leaf: new THREE.MeshLambertMaterial({ color: 0x3d6e2c }),
     lead: new THREE.MeshLambertMaterial({ color: 0x5d6168 }),
-    glass: new THREE.MeshLambertMaterial({ color: 0x2c3a48, emissive: 0x0d1720 }),
-    glassLit: new THREE.MeshBasicMaterial({ color: 0xcfe0ea }),
-    stained: new THREE.MeshBasicMaterial({ color: 0xe9c66b }),
+    glass: new THREE.MeshLambertMaterial({ map: TX.leaded(false), emissive: 0x0d1720 }),
+    glassLit: new THREE.MeshBasicMaterial({ map: TX.leaded(true) }),
+    stained: new THREE.MeshBasicMaterial({ map: TX.stainedGlass(3) }),
+    chimney: mat(TX.chimneyBrick()),
+    terracotta: new THREE.MeshLambertMaterial({ color: 0xb5683f }),
+    beastStone: new THREE.MeshLambertMaterial({ color: 0xd8d0be }),
     soot: new THREE.MeshBasicMaterial({ color: 0x1a1410 }),
     cloth: new THREE.MeshLambertMaterial({ color: 0xd8cfb8 }),
     iron: new THREE.MeshLambertMaterial({ color: 0x2b2b2e }),
@@ -125,12 +131,12 @@ export function buildWorld(scene, era) {
     const off = sgn * 0.07;
     if (horiz) {
       B.box(w + 0.35, h + 0.35, 0.12, M.stone, p, y, f + off * 0.5);
-      B.box(w, h, 0.05, glassMat, p, y, f + off * 1.3);
+      B.box(w, h, 0.05, glassMat, p, y, f + off * 1.3, { uv: glassMat === M.stained ? w : 0.45 });
       B.box(0.1, h, 0.08, M.stone, p, y, f + off * 1.6);
       B.box(w, 0.1, 0.08, M.stone, p, y + h * 0.15, f + off * 1.6);
     } else {
       B.box(0.12, h + 0.35, w + 0.35, M.stone, f + off * 0.5, y, p);
-      B.box(0.05, h, w, glassMat, f + off * 1.3, y, p);
+      B.box(0.05, h, w, glassMat, f + off * 1.3, y, p, { uv: glassMat === M.stained ? w : 0.45 });
       B.box(0.08, h, 0.1, M.stone, f + off * 1.6, y, p);
       B.box(0.08, 0.1, w, M.stone, f + off * 1.6, y + h * 0.15, p);
     }
@@ -140,13 +146,18 @@ export function buildWorld(scene, era) {
   // Base Court
   wall(-60, -15, -30, -15, { battlements: true, win: { ...courtWin, side: 'pos' } });
   wall(-60, 15, -30, 15, { battlements: true, win: { ...courtWin, side: 'neg' } });
-  wall(-60, -15, -60, 15, { h: 11, battlements: true });
+  wall(-60, -15, -60, 15, { h: 11, battlements: true, doors: [[-3, 3, 6]], win: { side: 'neg', ys: [3.2, 7.4], every: 5 } });
+  // Wings of the West Front (seen from outside)
+  wall(-60, -30, -60, -15, { battlements: true, win: { side: 'neg', ys: [3.2, 7], every: 4.2 } });
+  wall(-60, 15, -60, 30, { battlements: true, win: { side: 'neg', ys: [3.2, 7], every: 4.2 } });
+  wall(-60, -30, -46, -30, { battlements: true, win: { side: 'neg', ys: [3.2, 7], every: 4.6 } });
+  wall(-60, 30, -46, 30, { battlements: true, win: { side: 'pos', ys: [3.2, 7], every: 4.6 } });
   // Anne Boleyn's Gateway
   wall(-30, -15, -30, 15, { h: 12, battlements: true, doors: [[-3, 3, 6]], win: { side: 'neg', ys: [9], every: 6 } });
   // Clock Court north side
   wall(-30, -15, -24, -15, { battlements: true });
   wall(-24, -15, 6, -15, { h: 15, neg: M.panel, doors: [[-14, -10, 4.5]],
-    win: { side: 'pos', ys: [10.5], every: 4.2, w: 1.6, hh: 3.4 }, winLit: { side: 'neg', ys: [10.5], every: 4.2, w: 1.6, hh: 3.4 } });
+    win: { side: 'pos', ys: [10.5], every: 4.2, w: 1.6, hh: 3.4 }, winLit: { side: 'neg', ys: [10.5], every: 4.2, w: 1.6, hh: 3.4, glass: M.stained } });
   wall(6, -15, 26, -15, { h: 12, neg: M.wash, doors: [[14, 18, 4.5]], battlements: true,
     win: { side: 'pos', ys: [6.5], every: 4.5, w: 1.4, hh: 3 }, winLit: { side: 'neg', ys: [6.5], every: 4.5, w: 1.4, hh: 3, glass: M.stained } });
   // Hall / kitchens / chapel back walls
@@ -179,7 +190,46 @@ export function buildWorld(scene, era) {
   wall(26, 50, 60, 50, { h: 1.1, t: 0.6 });
 
   // ---------- Floors, ground, sky ----------
-  B.plane(300, 200, M.grass, 0, 0, -49.5, { rotX: -Math.PI / 2, uv: 6 });
+  // ground, with a gap for the moat in front of the West Front
+  B.plane(74, 200, M.grass, -113, 0, -49.5, { rotX: -Math.PI / 2, uv: 6 });
+  B.plane(216, 200, M.grass, 42, 0, -49.5, { rotX: -Math.PI / 2, uv: 6 });
+  B.plane(10, 119.5, M.grass, -71, 0, -89.75, { rotX: -Math.PI / 2, uv: 6 });
+  B.plane(10, 20.5, M.grass, -71, 0, 40.25, { rotX: -Math.PI / 2, uv: 6 });
+  // the moat
+  B.plane(10, 60, M.water, -71, -1.1, 0, { rotX: -Math.PI / 2, uv: 6 });
+  B.box(0.6, 1.6, 60, M.stone, -76.3, -0.8, 0, { uv: 2 });
+  B.box(0.6, 1.6, 60, M.stone, -65.7, -0.8, 0, { uv: 2 });
+  B.box(10, 1.6, 0.6, M.stone, -71, -0.8, -30.3, { uv: 2 });
+  B.box(10, 1.6, 0.6, M.stone, -71, -0.8, 30.3, { uv: 2 });
+  B.collider(-71, -16.5, 10.6, 27);
+  B.collider(-71, 16.5, 10.6, 27);
+  // the bridge, lined with the King's Beasts
+  B.box(10.6, 0.5, 6.4, M.stone, -71, -0.24, 0, { uv: 2 });
+  B.box(10, 0.04, 5.6, M.gravel, -71, 0.03, 0, { uv: 3 });
+  for (let k = 0; k < 3; k++) B.box(0.9, 1.1, 6, M.stone, -74 + k * 3, -0.9, 0); // arches' piers
+  for (const sz of [-3.1, 3.1]) {
+    B.box(10.6, 0.9, 0.4, M.stone, -71, 0.45, sz, { collide: true, uv: 2 });
+    for (let k = 0; k < 5; k++) kingsBeast(-75.2 + k * 2.1, sz, k + (sz > 0 ? 5 : 0));
+  }
+  B.plane(36, 6, M.gravel, -78.5, 0.02, 0, { rotX: -Math.PI / 2, uv: 3 });
+  // boundary hedges of the outer green
+  B.box(0.9, 1.3, 60, M.hedge, -96.5, 0.65, 0, { collide: true });
+  B.box(36, 1.3, 0.9, M.hedge, -78.5, 0.65, -30.5, { collide: true });
+  B.box(36, 1.3, 0.9, M.hedge, -78.5, 0.65, 30.5, { collide: true });
+  B.collider(-63, -30.5, 6, 1); B.collider(-63, 30.5, 6, 1);
+
+  function kingsBeast(x, z, k) {
+    const cols = [[0xd9ab3c, 0xa51d22], [0x24407a, 0xd9ab3c], [0xa51d22, 0xf2efe4], [0x2f6b3a, 0xf2efe4], [0xd9ab3c, 0x24407a]];
+    const [c1, c2] = cols[k % 5];
+    B.box(0.8, 0.6, 0.8, M.stone, x, 1.2, z);
+    B.box(0.55, 0.9, 0.5, M.beastStone, x, 1.95, z); // body (sitting)
+    B.sphere(0.24, M.beastStone, x, 2.55, z - Math.sign(z) * 0.05);
+    B.box(0.12, 0.18, 0.2, M.beastStone, x - 0.1, 2.78, z); B.box(0.12, 0.18, 0.2, M.beastStone, x + 0.1, 2.78, z); // ears
+    // shield held in front
+    const sz = z - Math.sign(z) * 0.32;
+    B.box(0.5, 0.62, 0.06, new THREE.MeshLambertMaterial({ color: c1 }), x, 1.95, sz);
+    B.box(0.24, 0.3, 0.07, new THREE.MeshLambertMaterial({ color: c2 }), x + 0.12, 2.1, sz);
+  }
   B.plane(300, 120, M.water, 0, -0.25, 110.5, { rotX: -Math.PI / 2, uv: 8 });
   B.plane(30, 30, M.cobbles, -45, 0.02, 0, { rotX: -Math.PI / 2, uv: 4 });
   B.plane(56, 30, M.cobbles, -2, 0.02, 0, { rotX: -Math.PI / 2, uv: 4 });
@@ -251,27 +301,63 @@ export function buildWorld(scene, era) {
   }
   turret(-60, -4.6, 15); turret(-60, 4.6, 15);
   turret(-30, -4.6, 16); turret(-30, 4.6, 16);
-  B.box(0.2, 5, 6, M.oak, -59.5, 2.5, 0); // the great west gate (closed)
-  B.box(0.25, 1.4, 1.4, M.gold, -59.4, 6.8, 0); // Tudor rose plaque
-  B.box(0.3, 0.8, 5.8, M.stone, -59.5, 5.2, 0);
+  // the great west gate, standing open
+  B.box(2.9, 5.6, 0.2, M.oak, -58.5, 2.8, -3.3, { rotY: -0.25 });
+  B.box(2.9, 5.6, 0.2, M.oak, -58.5, 2.8, 3.3, { rotY: 0.25 });
+  B.box(0.25, 1.4, 1.4, M.gold, -59.4, 7.0, 0); // Tudor rose plaque (inside)
+  B.box(0.5, 0.6, 6.4, M.stone, -60, 6.3, 0); // arch moulding
+  // Henry VIII's coat of arms above the outside of the gate, and an oriel window
+  const armsMat = new THREE.MeshLambertMaterial({ map: TX.royalArms() });
+  B.box(0.15, 2.2, 2.2, M.stone, -60.5, 7.9, 0);
+  const arms = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), armsMat);
+  arms.position.set(-60.6, 7.9, 0); arms.rotation.y = -Math.PI / 2; dynamic.add(arms);
+  B.box(1.3, 2.6, 3.6, M.stone, -61, 10.4, 0);
+  for (const oz of [-1.1, 0, 1.1]) B.box(0.05, 2, 0.9, M.glass, -61.67, 10.4, oz, { uv: 0.45 });
+  B.box(1.5, 0.3, 3.8, M.stone, -61, 11.8, 0);
   anchors.westGate = [-57, 0];
 
   if (era.clock) {
-    const clock = new THREE.Mesh(new THREE.CircleGeometry(1.9, 32), new THREE.MeshLambertMaterial({ map: TX.clockFace() }));
-    clock.position.set(-29.5, 9, 0);
+    const clock = new THREE.Mesh(new THREE.CircleGeometry(1.5, 32), new THREE.MeshLambertMaterial({ map: TX.clockFace() }));
+    clock.position.set(-29.5, 10.1, 0);
     clock.rotation.y = Math.PI / 2;
     dynamic.add(clock);
-    B.box(0.2, 4.4, 4.4, M.stone, -29.65, 9, 0);
+    B.box(0.2, 3.4, 3.4, M.stone, -29.65, 10.1, 0);
+  }
+  // Wolsey's terracotta coat of arms above the arch on the Clock Court side
+  const wa = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.9), new THREE.MeshLambertMaterial({ map: TX.wolseyArms() }));
+  wa.position.set(-29.52, 7.35, 0); wa.rotation.y = Math.PI / 2; dynamic.add(wa);
+  B.box(0.12, 2.1, 2.1, M.terracotta, -29.6, 7.35, 0);
+  // Bell turret on top of Anne Boleyn's Gateway
+  B.box(2.6, 0.5, 2.6, M.stone, -30, 12.25, 0);
+  for (const [dx, dz] of [[-0.9, -0.9], [0.9, -0.9], [-0.9, 0.9], [0.9, 0.9]]) B.box(0.22, 1.8, 0.22, M.stone, -30 + dx, 13.4, dz);
+  B.sphere(0.45, M.gold, -30, 13.3, 0, 1, 1.1, 1);
+  B.box(2.4, 0.25, 2.4, M.lead, -30, 14.4, 0);
+  B.cone(1.35, 1.8, 8, M.lead, -30, 15.4, 0);
+  B.cyl(0.04, 0.04, 1.2, 4, M.gold, -30, 16.8, 0);
+  B.box(0.04, 0.4, 0.6, M.gold, -30, 17.1, 0.2);
+  // Terracotta roundels of Roman emperors on the gateway turrets
+  const rMats = [0, 1, 2, 3, 4, 5].map((i) => new THREE.MeshLambertMaterial({ map: TX.roundel(i) }));
+  let ri = 0;
+  for (const [tx, tz, face] of [[-30, -4.6, -1], [-30, 4.6, -1], [-30, -4.6, 1], [-30, 4.6, 1], [-60, -4.6, 1], [-60, 4.6, 1]]) {
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.75, 24), rMats[ri++ % 6]);
+    disc.position.set(tx + face * 1.63, 8, tz);
+    disc.rotation.y = face * Math.PI / 2;
+    dynamic.add(disc);
   }
 
+  // Hampton Court's famous decorated brick chimneys
   function chimney(x, z, base, n = 2) {
+    B.box(n * 0.8 + 0.3, 0.8, 1.1, M.brick, x + (n - 1) * 0.4, base + 0.4, z, { uv: 4 });
     for (let i = 0; i < n; i++) {
-      B.cyl(0.32, 0.32, 3.2, 6, M.brick, x + i * 0.75, base + 1.6, z, { uv: 2 });
-      B.cyl(0.42, 0.42, 0.3, 6, M.stone, x + i * 0.75, base + 3.25, z);
+      const cx = x + i * 0.8;
+      B.cyl(0.3, 0.3, 3.4, 8, M.chimney, cx, base + 2.5, z, { uv: 1.2 });
+      B.cyl(0.42, 0.34, 0.25, 8, M.brick, cx, base + 1.0, z, { uv: 2 });
+      B.cyl(0.46, 0.36, 0.45, 8, M.brick, cx, base + 4.35, z, { uv: 2 });
+      B.cyl(0.5, 0.5, 0.12, 8, M.stone, cx, base + 4.6, z);
     }
   }
   [[-55, -15], [-45, -15], [-36, -15], [-52, 15], [-40, 15], [-26, -15], [-20, 15], [-10, 15], [18, 15], [12, -35],
-    [-10, -55], [-18, -55], [30, -15], [44, -15], [-60, 10]].forEach(([x, z]) => chimney(x - 0.4, z, z === -55 || x === -60 ? 10 : 10, 2 + (Math.abs(x) % 2)));
+    [-10, -55], [-18, -55], [30, -15], [44, -15], [-60, 10], [-60, -22], [-60, 22], [-60, -27], [-52, -30], [-52, 30], [-33, 15], [8, 15]].forEach(([x, z]) => chimney(x - 0.4, z, z === -55 || x === -60 ? 10 : 10, 2 + (Math.abs(x) % 2)));
 
   // ---------- Base Court ----------
   // Wine fountain
@@ -426,7 +512,7 @@ export function buildWorld(scene, era) {
   B.sphere(0.35, M.blue, 45.2, 1.3, 10.2);
   const tapK = new THREE.MeshLambertMaterial({ map: TX.tapestry(5) });
   B.plane(6, 3.5, tapK, 32, 3, 14.55, { rotY: Math.PI, uv: 6 });
-  B.plane(5, 3, tapK, 44, 3, 14.55, { rotY: Math.PI, uv: 6 });
+  B.plane(3.4, 2.6, tapK, 47.6, 3, 14.55, { rotY: Math.PI, uv: 6 });
   fixPlaneUVs(B, [tapK]);
   anchors.henry = [47.2, 0];
 
@@ -503,9 +589,38 @@ export function buildWorld(scene, era) {
   for (let i = 0; i < 46; i++) {
     const a = r() * Math.PI * 2, d = 82 + r() * 40;
     const tx = Math.cos(a) * d, tz = Math.sin(a) * d * 0.8 - 5;
-    if (tz > 45) continue;
+    if (tz > 45 || (tx > -102 && tx < -55 && Math.abs(tz) < 38)) continue;
     B.cyl(0.4, 0.5, 4, 6, M.wood, tx, 2, tz);
     B.sphere(3 + r() * 1.5, M.leaf, tx, 6 + r(), tz, 1, 1.2, 1);
+  }
+
+  // ---------- Tudor objects to discover ----------
+  for (const o of era.objects || []) if (o.model) buildProp(B, M, o);
+
+  // ---------- Real paintings, hung where they belong ----------
+  const loader = new THREE.TextureLoader();
+  for (const pt of era.paintings || []) {
+    const tex = loader.load('assets/img/' + pt.img + '.jpg');
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const [x, y, z] = pt.pos;
+    const g = new THREE.Group();
+    g.position.set(x, y, z);
+    g.rotation.y = pt.rot;
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(pt.w + 0.3, pt.h + 0.3, 0.1), M.gold);
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(pt.w, pt.h), new THREE.MeshBasicMaterial({ map: tex, color: 0xe8e4dc }));
+    pic.position.z = 0.06;
+    g.add(frame, pic);
+    dynamic.add(g);
+  }
+
+  // Hanging candle rings (chandeliers) in the Great Hall
+  for (const cx of [-15, -3]) {
+    B.cyl(1.1, 1.1, 0.12, 12, M.iron, cx, 7, -25);
+    B.cyl(0.02, 0.02, 6, 4, M.iron, cx, 10, -25);
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      B.cyl(0.05, 0.05, 0.3, 5, M.paper, cx + Math.cos(a) * 1.05, 7.2, -25 + Math.sin(a) * 1.05);
+    }
   }
 
   // ---------- Lights and sky ----------
@@ -560,7 +675,7 @@ function mulberry(a) {
 
 export function areaAt(x, z) {
   // garden/rooms before courts (courts are bigger)
-  const order = ['privy', 'presence', 'study', 'hall', 'kitchens', 'chapel', 'garden', 'base', 'clock'];
+  const order = ['privy', 'presence', 'study', 'hall', 'kitchens', 'chapel', 'garden', 'base', 'clock', 'westfront'];
   for (const id of order) {
     const a = AREAS.find((q) => q.id === id);
     if (x >= a.x1 && x <= a.x2 && z >= a.z1 && z <= a.z2) return a;
