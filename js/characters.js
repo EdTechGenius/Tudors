@@ -124,6 +124,7 @@ export function markerSprite(symbol) {
 // A small painted portrait (data URL) for dialogue boxes.
 const portraitCache = new Map();
 export function portraitURL(lookIn, key) {
+  if (lookIn && lookIn.photo) return `assets/img/${lookIn.photo}.jpg`; // a real Tudor portrait
   if (key && portraitCache.has(key)) return portraitCache.get(key);
   const L = { ...DEFAULT, ...lookIn };
   const c = document.createElement('canvas');

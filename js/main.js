@@ -9,6 +9,9 @@ import ch1 from './content/chapter1.js';
 import ch2 from './content/chapter2.js';
 import ch3 from './content/chapter3.js';
 import ch4 from './content/chapter4.js';
+import { OBJECTS, PAINTINGS, ICONS, forChapter } from './content/objects.js';
+import { GLOSSARY, GLOSS_INDEX } from './content/glossary.js';
+import { createQuillPad } from './quill.js';
 
 const CHAPTERS = [ch1, ch2, ch3, ch4];
 const PKEY = 'tudor-advisor-progress-v1';
@@ -27,8 +30,9 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } },
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
-const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1 }, seenHowTo: false });
+const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1 }, seenHowTo: false, inventory: {}, signature: null });
 let progress = { ...defaultProgress(), ...store.get(PKEY, {}) };
+progress.inventory = progress.inventory || {};
 progress.settings = { ...defaultProgress().settings, ...(progress.settings || {}) };
 const saveProgress = () => store.set(PKEY, progress);
 
@@ -37,6 +41,17 @@ function applySettings() {
   document.body.classList.toggle('big-text', !!progress.settings.bigText);
   controls.sensitivity = progress.settings.look || 1;
 }
+
+// Picture credits for the real images (loaded once).
+let CREDITS = {};
+fetch('assets/img/credits.json').then((r) => r.json()).then((c) => { CREDITS = c; }).catch(() => {});
+const creditLine = (key) => {
+  const c = CREDITS[key];
+  return c ? `<a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.artist)}</a> · ${esc(c.license)}` : '';
+};
+const imgURL = (key) => (CREDITS[key] ? 'assets/img/' + CREDITS[key].file : `assets/img/${key}.jpg`);
+const TOTAL_TREASURES = OBJECTS.length;
+const foundCount = () => OBJECTS.filter((o) => progress.inventory[o.id]).length;
 
 // ---------------- Speech ----------------
 let voices = [];
@@ -94,6 +109,7 @@ const G = {
   lastSave: 0, mapBg: null, doneObjectives: new Set(),
 };
 window.__game = G; // handy for teachers' debugging and automated tests
+G.debugFinish = () => finishChapter();
 
 function freshState(ch) {
   return { flags: {}, sources: {}, facts: [], favour: ch.meters.favour, honesty: ch.meters.honesty, letter: null };
@@ -125,7 +141,11 @@ function loadChapter(ch, saved) {
   disposeScene();
   G.ch = ch;
   G.s = saved ? saved.s : freshState(ch);
-  G.world = buildWorld(scene, ch.era);
+  G.treasures = forChapter(OBJECTS, ch.id);
+  G.world = buildWorld(scene, { ...ch.era, objects: G.treasures, paintings: forChapter(PAINTINGS, ch.id) });
+  G.sparkles = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ map: TX.sparkle(), size: 0.55, transparent: true, depthWrite: false, color: 0xffffff }));
+  scene.add(G.sparkles);
+  updateSparkles();
   G.npcs.clear(); G.sources.clear(); G.spots.clear();
 
   for (const def of [...ch.npcs, ...staffAsNpcs()]) {
@@ -169,6 +189,18 @@ function loadChapter(ch, saved) {
   G.mapBg = drawMapBackground(220, 220);
   G.doneObjectives = new Set(ch.objectives.filter((o) => o.done(G.s)).map((o) => o.id));
   refresh();
+}
+
+// Little sparkles show the Tudor objects you have not yet added to the King's Inventory.
+function updateSparkles() {
+  const pts = [];
+  for (const o of G.treasures) if (!progress.inventory[o.id]) pts.push(o.pos[0], o.y + 0.35, o.pos[1]);
+  G.sparkles.geometry.dispose();
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  G.sparkles.geometry = g;
+  const chip = $('#inv-chip span');
+  if (chip) chip.textContent = `${foundCount()}/${TOTAL_TREASURES}`;
 }
 
 function glowRing() {
@@ -337,7 +369,7 @@ function addFact(text) {
 }
 
 function saveChapter() {
-  if (!G.ch || G.background || G.s.flags.chapterDone) return;
+  if (!G.ch || G.background || G.s.flags.reported) return;
   store.set(SKEY, { id: G.ch.id, s: G.s, pos: { x: G.pos.x, z: G.pos.z, yaw: controls.yaw } });
 }
 
@@ -384,6 +416,7 @@ function cardSequence(cards, { title = '', finalLabel = 'Continue' } = {}) {
         <div class="row"><span class="dots">${cards.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</span>
         <button class="btn primary" id="next">${i < cards.length - 1 ? 'Next ▶' : finalLabel}</button></div>`, 'card');
       autoSpeak(c.title + '. ' + c.text);
+      glossify(p.querySelector('.card-text'));
       p.querySelector('#next').onclick = () => { i++; if (i < cards.length) show(); else { closePanel(); resolve(); } };
     };
     show();
@@ -394,8 +427,126 @@ function narrate(text, button = 'Continue') {
   return new Promise((resolve) => {
     const p = openPanel(`<div class="card-head"><h2>📜</h2>${speakBtn('.card-text')}</div><div class="card-text">${text}</div><div class="row"><span></span><button class="btn primary" id="ok">${button}</button></div>`, 'card narr');
     autoSpeak(text);
+    glossify(p.querySelector('.card-text'));
     p.querySelector('#ok').onclick = () => { closePanel(); resolve(); };
   });
+}
+
+// ---------------- Glossary: tap a tricky word to see what it means ----------------
+const GLOSS_RE = new RegExp('\\b(' + [...GLOSS_INDEX.keys()].sort((a, b) => b.length - a.length).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\b', 'gi');
+function glossify(root) {
+  if (!root) return;
+  const seen = new Set();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => (n.parentElement.closest('button, .gloss, a, h2, h3, .kicker') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const text = node.nodeValue;
+    GLOSS_RE.lastIndex = 0;
+    let m, last = 0, frag = null;
+    while ((m = GLOSS_RE.exec(text))) {
+      const entry = GLOSS_INDEX.get(m[1].toLowerCase());
+      if (!entry || seen.has(entry.w)) continue;
+      seen.add(entry.w);
+      frag = frag || document.createDocumentFragment();
+      frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const span = document.createElement('span');
+      span.className = 'gloss';
+      span.dataset.g = entry.w;
+      span.textContent = m[1];
+      frag.appendChild(span);
+      last = m.index + m[1].length;
+    }
+    if (frag) { frag.appendChild(document.createTextNode(text.slice(last))); node.replaceWith(frag); }
+  }
+}
+document.addEventListener('click', (e) => {
+  const pop = $('#gloss-pop');
+  const g = e.target.closest && e.target.closest('.gloss');
+  if (!g) { pop.hidden = true; return; }
+  e.stopPropagation();
+  e.preventDefault();
+  const entry = GLOSSARY.find((x) => x.w === g.dataset.g);
+  pop.innerHTML = `<b>${esc(entry.w)}</b> ${speakBtn('#gloss-pop')}<br>${esc(entry.d)}`;
+  pop.querySelector('.speak').onclick = (ev) => { ev.stopPropagation(); speak(entry.w + '. ' + entry.d); };
+  pop.hidden = false;
+  const r = g.getBoundingClientRect();
+  const w = Math.min(320, window.innerWidth - 20);
+  pop.style.width = w + 'px';
+  pop.style.left = clamp(r.left + r.width / 2 - w / 2, 10, window.innerWidth - w - 10) + 'px';
+  const below = r.bottom + 8;
+  pop.style.top = (below + 120 > window.innerHeight ? Math.max(10, r.top - 130) : below) + 'px';
+  if (!G.s) return;
+  G.s.words = G.s.words || [];
+  if (!G.s.words.includes(entry.w)) G.s.words.push(entry.w);
+}, true);
+
+// ---------------- The King's Inventory: Tudor objects ----------------
+async function examineTreasure(o) {
+  const before = G.mode;
+  setMode('ui');
+  const found = !!progress.inventory[o.id];
+  const pic = o.img ? `<figure class="tpic"><img src="${imgURL(o.img)}" alt="${esc(o.name)}"><figcaption>${creditLine(o.img)}</figcaption></figure>`
+    : `<figure class="tpic icon-pic"><span>${ICONS[o.id] || '🏺'}</span></figure>`;
+  const p = openPanel(`
+    <div class="kicker">🏺 The King's Inventory · ${esc(o.area)}</div>
+    <div class="card-head"><h2>${esc(o.name)}</h2>${speakBtn('.t-all')}</div>
+    <div class="treasure ${pic ? 'has-pic' : ''}">${pic}
+      <div class="t-all"><p>${esc(o.text)}</p><p class="didyou"><b>Did you know?</b> ${esc(o.fact)}</p></div>
+    </div>
+    <div class="row">
+      ${o.activity === 'quill' ? '<button class="btn" id="quill">✒️ Try writing with a quill</button>' : '<span></span>'}
+      <button class="btn primary" id="ok">${found ? 'Close' : '📜 Add to the King\'s Inventory'}</button>
+    </div>`, 'card treasure-card');
+  glossify(p.querySelector('.t-all'));
+  autoSpeak(o.name + '. ' + o.text + ' Did you know? ' + o.fact);
+  const r = await new Promise((res) => {
+    p.querySelector('#ok').onclick = () => res('ok');
+    const q = p.querySelector('#quill');
+    if (q) q.onclick = () => res('quill');
+  });
+  if (!found) {
+    progress.inventory[o.id] = true;
+    saveProgress();
+    updateSparkles();
+    toast(`🏺 Added to the King's Inventory (${foundCount()}/${TOTAL_TREASURES})`, 'good');
+    pulse('#inv-chip');
+  }
+  closePanel();
+  if (r === 'quill') await quillActivity();
+  setMode(before === 'ui' ? 'play' : 'play');
+}
+
+// Write like a Tudor: trace Henry VIII's real signature, then sign your own name.
+async function quillActivity() {
+  setMode('ui');
+  let p = openPanel(`
+    <div class="kicker">✒️ Write like a Tudor · Step 1 of 2</div>
+    <h2>Copy the King's signature</h2>
+    <p>Henry VIII signed his letters <b>"Henry R"</b>. The R stands for <i>Rex</i>, Latin for "king". Use your Apple Pencil (or your finger) to trace over his real signature with your quill. When the ink runs dry, dip your quill in the inkpot!</p>
+    <div id="qpad"></div>
+    <p class="small muted">${creditLine('signature')}</p>
+    <div class="row"><button class="btn" id="skip">Skip</button><button class="btn primary" id="next">Next ▶</button></div>`, 'wide quill-panel');
+  createQuillPad(p.querySelector('#qpad'), { height: 240, guideImg: imgURL('signature'), placeholder: '' });
+  const go = await new Promise((res) => { p.querySelector('#next').onclick = () => res(true); p.querySelector('#skip').onclick = () => res(false); });
+  closePanel();
+  if (!go) return;
+  p = openPanel(`
+    <div class="kicker">✒️ Write like a Tudor · Step 2 of 2</div>
+    <h2>Now sign your own name</h2>
+    <p>Write your name in your best Tudor handwriting, with a flourish! Your signature will appear on your Royal Reports.</p>
+    <div id="qpad"></div>
+    <div class="row"><button class="btn" id="skip">Not now</button><button class="btn primary" id="save">💾 Save my signature</button></div>`, 'wide quill-panel');
+  const pad = createQuillPad(p.querySelector('#qpad'), { height: 200, lines: true, placeholder: 'Sign your name here…' });
+  const save = await new Promise((res) => { p.querySelector('#save').onclick = () => res(true); p.querySelector('#skip').onclick = () => res(false); });
+  if (save && !pad.isEmpty()) {
+    progress.signature = pad.toDataURL(500);
+    saveProgress();
+    toast('✒️ Signature saved for your reports', 'good');
+  }
+  closePanel();
 }
 
 // ---------------- Dialogue ----------------
@@ -414,6 +565,7 @@ function showLine({ name, role, portrait, text, choices, narrator }) {
       </div>
       <button class="speak dspeak" aria-label="Read aloud">🔊</button>`;
     d.querySelector('.dspeak').onclick = () => speak(text);
+    glossify(d.querySelector('.dtext'));
     autoSpeak(text);
     d.querySelectorAll('[data-i]').forEach((b) => {
       b.onclick = () => { stopSpeech(); resolve(+b.dataset.i); };
@@ -473,12 +625,14 @@ async function examineSource(src) {
     <div class="card-head"><h2>${esc(d.name)}</h2>${speakBtn('.src-all')}</div>
     <div class="src-all">
       <div class="src-meta"><span><b>When:</b> ${esc(d.date)}</span><span><b>Who made it:</b> ${esc(d.origin)}</span></div>
+      ${d.img ? `<figure class="tpic src-pic"><img src="${imgURL(d.img)}" alt="${esc(d.name)}"><figcaption>${creditLine(d.img)}</figcaption></figure>` : ''}
       <blockquote class="parch">${esc(d.text)}</blockquote>
       <p>${d.about}</p>
     </div>
     <p class="small muted">Words in sources have been simplified for this game.</p>`;
   if (already) {
     const p = openPanel(body + `<div class="row"><span></span><button class="btn primary" id="ok">Close</button></div>`, 'card source');
+    glossify(p.querySelector('.src-all'));
     await new Promise((r) => { p.querySelector('#ok').onclick = r; });
     closePanel();
     setMode('play');
@@ -491,6 +645,7 @@ async function examineSource(src) {
       <div class="feedback"></div>
     </div>`, 'card source');
   autoSpeak(d.name + '. ' + d.text + '. ' + d.about);
+  glossify(p.querySelector('.src-all'));
   const i = await new Promise((r) => p.querySelectorAll('.opts [data-i]').forEach((b) => { b.onclick = () => r(+b.dataset.i); }));
   const opt = q.options[i];
   p.querySelectorAll('.opts button').forEach((b, k) => {
@@ -536,15 +691,37 @@ async function writeLetter() {
           return `<button class="btn choice ${ok ? '' : 'locked'}" data-p="${pi}" data-o="${oi}" ${ok ? '' : 'disabled'}>${ok ? '' : '🔒 '}${esc(o.t)}${ok ? '' : `<small>${esc(needLabel(o.needs))}</small>`}</button>`;
         }).join('')}</div>`).join('')}
       </div>
-      <div class="parchment" id="lpreview"><div class="to">To ${esc(L.to)}</div><div id="ltext"></div><div class="seal" id="seal"></div></div>
+      <div class="letter-right"><div class="parchment" id="lpreview"><div class="to">To ${esc(L.to)}</div><div id="ltext"></div><img id="lsig" alt="" hidden><div id="lsigtyped"></div><div class="seal" id="seal"></div></div>
+    <div class="sign-box">
+      <h3>${L.parts.length + 1}. ✒️ Sign your letter with your quill</h3>
+      <p class="small">Use your Apple Pencil (or your finger) to sign your name. Press harder for thicker lines, and dip your quill in the ink when it runs dry!</p>
+      <div id="sigpad"></div>
+      <label class="small typed-toggle"><input type="checkbox" id="typesig"> I would rather type my name</label>
+      <input id="typedsig" maxlength="40" placeholder="Type your name" hidden>
     </div>
+    </div></div>
     <div class="row"><button class="btn" id="cancel">Not yet</button><button class="btn primary" id="send" disabled>🔴 Seal and send</button></div>`, 'wide letter');
+  let sigPad;
   autoSpeak(L.intro);
   const update = () => {
     $('#ltext').innerHTML = picks.map((x, i) => (x === null ? `<p class="blank">…${esc(L.parts[i].label.toLowerCase())}…</p>` : `<p>${esc(L.parts[i].options[x].t)}</p>`)).join('');
-    p.querySelector('#send').disabled = picks.some((x) => x === null);
+    const typed = p.querySelector('#typesig').checked;
+    const typedName = p.querySelector('#typedsig').value.trim();
+    const signed = typed ? typedName.length > 0 : sigPad && !sigPad.isEmpty();
+    p.querySelector('#send').disabled = picks.some((x) => x === null) || !signed;
     p.querySelectorAll('.lpart button').forEach((b) => b.classList.toggle('picked', picks[+b.dataset.p] === +b.dataset.o));
+    const img = p.querySelector('#lsig');
+    if (!typed && sigPad && !sigPad.isEmpty()) { img.src = sigPad.toDataURL(400); img.hidden = false; } else img.hidden = true;
+    p.querySelector('#lsigtyped').textContent = typed ? typedName : '';
   };
+  sigPad = createQuillPad(p.querySelector('#sigpad'), { height: 150, lines: true, placeholder: 'Sign your name here…', onChange: () => update() });
+  p.querySelector('#typesig').onchange = () => {
+    const t = p.querySelector('#typesig').checked;
+    p.querySelector('#typedsig').hidden = !t;
+    p.querySelector('#sigpad').hidden = t;
+    update();
+  };
+  p.querySelector('#typedsig').oninput = () => update();
   update();
   p.querySelectorAll('.lpart button').forEach((b) => { b.onclick = () => { picks[+b.dataset.p] = +b.dataset.o; update(); }; });
   const go = await new Promise((r) => { p.querySelector('#cancel').onclick = () => r(false); p.querySelector('#send').onclick = () => r(true); });
@@ -562,7 +739,8 @@ async function writeLetter() {
   const fx = { favour: 0, honesty: 0 };
   for (const o of chosen) { if (o.fx) { fx.favour += o.fx.favour || 0; fx.honesty += o.fx.honesty || 0; } }
   fx.favour += Math.round((score / max) * 14 - 6);
-  G.s.letter = { score, max, lines: chosen.map((o) => o.t) };
+  const typedSig = p.querySelector('#typesig').checked ? p.querySelector('#typedsig').value.trim() : null;
+  G.s.letter = { score, max, lines: chosen.map((o) => o.t), signature: typedSig ? null : sigPad.toDataURL(400), typedSignature: typedSig };
   const stars = letterStars(score, max);
   const p2 = openPanel(`
     <div class="kicker">✒️ Your letter</div>
@@ -597,18 +775,21 @@ async function useSpot(sp) {
 async function finishChapter() {
   setMode('ui');
   G.s.flags.chapterDone = true;
-  store.del(SKEY);
+  saveChapter(); // so a pupil who stops during the quiz can carry on next lesson
   const ch = G.ch;
   await cardSequence(ch.history, { title: `What really happened · ${ch.years}`, finalLabel: 'Continue ▶' });
   await showWivesUpdate();
-  const quiz = await runQuiz(ch.quiz);
+  const qres = await runQuiz(ch.quiz);
+  const quiz = qres.score;
   const srcCorrect = Object.values(G.s.sources).filter((x) => x.correct).length;
   const result = {
     favour: Math.round(G.s.favour), honesty: Math.round(G.s.honesty),
     sources: srcCorrect, sourcesMax: ch.sources.length,
     letter: G.s.letter ? G.s.letter.score : 0, letterMax: G.s.letter ? G.s.letter.max : 10,
     letterLines: G.s.letter ? G.s.letter.lines : [],
-    quiz, quizMax: ch.quiz.length, facts: G.s.facts.length, date: new Date().toLocaleDateString('en-GB'),
+    quiz, quizMax: qres.max, quizDetails: qres.details, facts: G.s.facts.length, date: new Date().toLocaleDateString('en-GB'),
+    signature: G.s.letter ? G.s.letter.signature : null, typedSignature: G.s.letter ? G.s.letter.typedSignature : null,
+    inventory: foundCount(),
   };
   const pct = (result.sources / result.sourcesMax + result.letter / result.letterMax + result.quiz / result.quizMax) / 3;
   result.stars = pct >= 0.85 ? 3 : pct >= 0.6 ? 2 : 1;
@@ -616,6 +797,8 @@ async function finishChapter() {
   if (!prev || result.stars >= prev.stars) progress.completed[ch.id] = result;
   progress.unlocked = Math.max(progress.unlocked, Math.min(4, ch.id + 1));
   saveProgress();
+  G.s.flags.reported = true;
+  store.del(SKEY);
   await showReport(ch, result);
   if (ch.id === 4) await showFinale();
   showChapterSelect();
@@ -662,25 +845,157 @@ function showWivesUpdate() {
   });
 }
 
+const SKILLS = {
+  retrieve: ['📖', 'Retrieval', 'Find the answer in what you have read or heard.'],
+  infer: ['🔍', 'Inference', 'Use clues to work out what is not said directly.'],
+  vocab: ['🔤', 'Vocabulary', 'Show you understand what words mean.'],
+  predict: ['🔮', 'Prediction', 'Use what you know to say what might happen next.'],
+  explain: ['💡', 'Explanation', 'Explain why something happened.'],
+  summarise: ['📝', 'Summary', 'Sum up the most important points.'],
+  sequence: ['🧩', 'Sequencing', 'Put events in the right order.'],
+};
+const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+
+// The end-of-chapter quiz, with several different kinds of question.
 function runQuiz(questions) {
   return new Promise((resolve) => {
     let i = 0, score = 0;
+    const details = [];
     const show = () => {
       const q = questions[i];
-      const p = openPanel(`<div class="kicker">🎓 Quiz · Question ${i + 1} of ${questions.length}</div>
-        <div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
-        <div class="opts">${q.options.map((o, k) => `<button class="btn choice" data-k="${k}">${esc(o)}</button>`).join('')}</div>
-        <div class="feedback"></div>`, 'card');
-      autoSpeak(q.q);
-      p.querySelectorAll('[data-k]').forEach((b) => {
-        b.onclick = () => {
-          const k = +b.dataset.k, ok = k === q.answer;
-          if (ok) score++;
-          p.querySelectorAll('[data-k]').forEach((x, j) => { x.disabled = true; if (j === q.answer) x.classList.add('right'); else if (j === k) x.classList.add('wrong'); });
-          p.querySelector('.feedback').innerHTML = `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : '❌ Not quite.'} ${esc(q.why)}</p><div class="row"><span>Score: ${score}/${i + 1}</span><button class="btn primary" id="next">${i < questions.length - 1 ? 'Next question ▶' : 'See my report ▶'}</button></div>`;
-          p.querySelector('#next').onclick = () => { i++; if (i < questions.length) show(); else { closePanel(); resolve(score); } };
+      const [icon, skillName, skillHint] = SKILLS[q.skill] || ['❓', 'Question', ''];
+      const head = `<div class="kicker">🎓 Quiz · Question ${i + 1} of ${questions.length}</div>
+        <div class="skill-tag skill-${q.skill}" title="${esc(skillHint)}">${icon} ${skillName}</div>`;
+      let body = '';
+      if (q.type === 'mc') body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
+        <div class="opts">${q.options.map((o, k) => `<button class="btn choice" data-k="${k}">${esc(o)}</button>`).join('')}</div>`;
+      if (q.type === 'gap') {
+        let g = 0;
+        const sentence = esc(q.text).replace(/___/g, () => `<button class="gap" data-g="${g++}">&nbsp;</button>`);
+        body = `<div class="card-head"><h2 class="q">Fill in the gaps</h2>${speakBtn('.gap-sentence')}</div>
+          <p class="gap-sentence">${sentence}</p>
+          <p class="small muted">Tap a word to put it in the next empty gap. Tap a gap to empty it again.</p>
+          <div class="bank">${shuffle(q.bank).map((w) => `<button class="btn tile" data-w="${esc(w)}">${esc(w)}</button>`).join('')}</div>
+          <div class="row"><span></span><button class="btn primary" id="check" disabled>Check ✔</button></div>`;
+      }
+      if (q.type === 'match') {
+        const meanings = shuffle(q.pairs.map((p) => p[1]));
+        body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.match')}</div>
+          <div class="match">${q.pairs.map(([w], k) => `<div class="mrow"><b>${esc(w)}</b><select data-m="${k}"><option value="">Choose a meaning…</option>${meanings.map((m) => `<option>${esc(m)}</option>`).join('')}</select></div>`).join('')}</div>
+          <div class="row"><span></span><button class="btn primary" id="check" disabled>Check ✔</button></div>`;
+      }
+      if (q.type === 'order') {
+        body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
+          <p class="small muted">Tap the events in the order they happened, starting with the earliest.</p>
+          <ol class="order-list"></ol>
+          <div class="bank col">${shuffle(q.items).map((t) => `<button class="btn tile" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+          <div class="row"><button class="btn" id="reset">↺ Start again</button><button class="btn primary" id="check" disabled>Check ✔</button></div>`;
+      }
+      if (q.type === 'write') {
+        body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
+          <p class="small muted">Write your answer with your quill. Use your Apple Pencil or your finger.</p>
+          <div id="wpad"></div>
+          <label class="small typed-toggle"><input type="checkbox" id="typeans"> I would rather type my answer</label>
+          <textarea id="typedans" rows="4" placeholder="Type your answer here" hidden></textarea>
+          <div class="row"><span></span><button class="btn primary" id="check" disabled>I've finished ✔</button></div>`;
+      }
+      const p = openPanel(head + body + '<div class="feedback"></div>', q.type === 'write' ? 'wide quiz' : 'card quiz');
+      autoSpeak(q.q || q.text);
+      const done = (ok, extra = {}) => {
+        if (ok) score++;
+        details.push({ skill: q.skill, ok, q: q.q || q.text, ...extra });
+        const fb = p.querySelector('.feedback');
+        fb.innerHTML = `${extra.feedbackHTML || `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : '❌ Not quite.'} ${esc(q.why || '')}</p>`}
+          <div class="row"><span>Score: ${score}/${i + 1}</span><button class="btn primary" id="next">${i < questions.length - 1 ? 'Next question ▶' : 'See my report ▶'}</button></div>`;
+        fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        p.querySelector('#next').onclick = () => { i++; if (i < questions.length) show(); else { closePanel(); resolve({ score, max: questions.length, details }); } };
+      };
+
+      if (q.type === 'mc') {
+        p.querySelectorAll('[data-k]').forEach((b) => {
+          b.onclick = () => {
+            const k = +b.dataset.k, ok = k === q.answer;
+            p.querySelectorAll('[data-k]').forEach((x, j) => { x.disabled = true; if (j === q.answer) x.classList.add('right'); else if (j === k) x.classList.add('wrong'); });
+            done(ok);
+          };
+        });
+      }
+      if (q.type === 'gap') {
+        const gaps = [...p.querySelectorAll('.gap')];
+        const fill = Array(gaps.length).fill(null);
+        const upd = () => {
+          gaps.forEach((g, k) => { g.textContent = fill[k] || ' '; g.classList.toggle('filled', !!fill[k]); });
+          p.querySelectorAll('.tile').forEach((t) => { t.disabled = fill.includes(t.dataset.w); });
+          p.querySelector('#check').disabled = fill.includes(null);
         };
-      });
+        p.querySelectorAll('.tile').forEach((t) => { t.onclick = () => { const k = fill.indexOf(null); if (k >= 0) { fill[k] = t.dataset.w; upd(); } }; });
+        gaps.forEach((g, k) => { g.onclick = () => { fill[k] = null; upd(); }; });
+        p.querySelector('#check').onclick = () => {
+          const ok = fill.every((w, k) => w === q.answers[k]);
+          gaps.forEach((g, k) => { g.disabled = true; g.classList.add(fill[k] === q.answers[k] ? 'right' : 'wrong'); });
+          p.querySelectorAll('.tile, #check').forEach((b) => { b.disabled = true; });
+          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : `❌ Not quite. The answers were: <b>${q.answers.map(esc).join('</b>, <b>')}</b>.`} ${esc(q.why)}</p>` });
+        };
+        upd();
+      }
+      if (q.type === 'match') {
+        const sels = [...p.querySelectorAll('select')];
+        sels.forEach((sl) => { sl.onchange = () => { p.querySelector('#check').disabled = sels.some((x) => !x.value); }; });
+        p.querySelector('#check').onclick = () => {
+          let right = 0;
+          sels.forEach((sl, k) => { const ok = sl.value === q.pairs[k][1]; if (ok) right++; sl.disabled = true; sl.classList.add(ok ? 'right' : 'wrong'); });
+          p.querySelector('#check').disabled = true;
+          const ok = right === q.pairs.length;
+          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ All matched correctly!' : `❌ You matched ${right} of ${q.pairs.length}.`}</p><ul class="small">${q.pairs.map(([w, m]) => `<li><b>${esc(w)}</b>: ${esc(m)}</li>`).join('')}</ul>` });
+        };
+      }
+      if (q.type === 'order') {
+        const chosen = [];
+        const list = p.querySelector('.order-list');
+        const upd = () => {
+          list.innerHTML = chosen.map((t) => `<li>${esc(t)}</li>`).join('');
+          p.querySelectorAll('.tile').forEach((t) => { t.disabled = chosen.includes(t.dataset.t); });
+          p.querySelector('#check').disabled = chosen.length !== q.items.length;
+        };
+        p.querySelectorAll('.tile').forEach((t) => { t.onclick = () => { chosen.push(t.dataset.t); upd(); }; });
+        p.querySelector('#reset').onclick = () => { chosen.length = 0; upd(); };
+        p.querySelector('#check').onclick = () => {
+          const ok = chosen.every((t, k) => t === q.items[k]);
+          p.querySelectorAll('.tile, #check, #reset').forEach((b) => { b.disabled = true; });
+          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Perfect order!' : '❌ Not quite. The correct order is:'}</p>${ok ? '' : `<ol class="small">${q.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`}<p class="small">${esc(q.why)}</p>` });
+        };
+        upd();
+      }
+      if (q.type === 'write') {
+        const pad = createQuillPad(p.querySelector('#wpad'), { height: 230, lines: true, placeholder: 'Write your answer here…', onChange: () => chk() });
+        const typedBox = p.querySelector('#typedans');
+        const chk = () => {
+          const typed = p.querySelector('#typeans').checked;
+          p.querySelector('#check').disabled = typed ? typedBox.value.trim().length < 3 : pad.isEmpty();
+        };
+        p.querySelector('#typeans').onchange = () => { const t = p.querySelector('#typeans').checked; typedBox.hidden = !t; p.querySelector('#wpad').hidden = t; chk(); };
+        typedBox.oninput = chk;
+        p.querySelector('#check').onclick = () => {
+          const typed = p.querySelector('#typeans').checked;
+          const answer = typed ? { text: typedBox.value.trim() } : { img: pad.toDataURL(560) };
+          p.querySelector('#check').disabled = true;
+          p.querySelectorAll('#wpad button, #typeans').forEach((b) => { b.disabled = true; });
+          typedBox.disabled = true;
+          const fb = p.querySelector('.feedback');
+          fb.innerHTML = `<div class="model"><h3>💡 A model answer</h3><p>${esc(q.model)}</p></div>
+            <h3>✔️ Check your own answer: tick what you included</h3>
+            <div class="checklist">${q.checklist.map((c, k) => `<label class="set"><input type="checkbox" data-c="${k}"> ${esc(c)}</label>`).join('')}</div>
+            <div class="row"><span class="small muted">Be honest! Your teacher can see your answer on your report.</span><button class="btn primary" id="marked">Done ✔</button></div>`;
+          autoSpeak('A model answer. ' + q.model);
+          fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          fb.querySelector('#marked').onclick = () => {
+            const ticks = fb.querySelectorAll('input:checked').length;
+            const ok = ticks >= Math.ceil(q.checklist.length / 2) + (q.checklist.length > 2 ? 0 : 0);
+            done(ok, { written: answer, ticks, tickMax: q.checklist.length,
+              feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? `✅ Well done! You ticked ${ticks} of ${q.checklist.length}.` : `🤔 You ticked ${ticks} of ${q.checklist.length}. Look again at the model answer to see what you could add next time.`}</p>` });
+          };
+        };
+      }
     };
     show();
   });
@@ -688,6 +1003,8 @@ function runQuiz(questions) {
 
 function reportHTML(ch, r, forPrint = false) {
   const bar = (v) => `<span class="rbar"><span style="width:${v}%"></span></span> ${v}%`;
+  const skills = (r.quizDetails || []).map((d) => `<span class="sk ${d.ok ? 'ok' : 'no'}">${(SKILLS[d.skill] || ['❓'])[0]} ${(SKILLS[d.skill] || ['', '?'])[1]} ${d.ok ? '✓' : '✗'}</span>`).join('');
+  const written = (r.quizDetails || []).filter((d) => d.written);
   return `
     <div class="report ${forPrint ? 'print' : ''}">
       <div class="rhead"><div class="rose">🌹</div><div><h2>Royal Report</h2><div>${esc(progress.name || 'Pupil')} · ${esc(r.date)}</div></div><div class="stars">${'⭐'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}</div></div>
@@ -700,11 +1017,16 @@ function reportHTML(ch, r, forPrint = false) {
         <tr><td>✒️ Letter</td><td>${'⭐'.repeat(letterStars(r.letter, r.letterMax))} (${r.letter} / ${r.letterMax} points)</td></tr>
         <tr><td>🎓 Quiz</td><td>${r.quiz} / ${r.quizMax}</td></tr>
         <tr><td>📜 Facts discovered</td><td>${r.facts}</td></tr>
+        <tr><td>🏺 King's Inventory</td><td>${r.inventory ?? foundCount()} / ${TOTAL_TREASURES} Tudor objects found (whole game)</td></tr>
       </table>
-      ${r.letterLines && r.letterLines.length ? `<h4>Your letter</h4><blockquote class="parch">${r.letterLines.map(esc).join('<br>')}</blockquote>` : ''}
+      ${skills ? `<h4>Reading skills in the quiz</h4><div class="skills">${skills}</div>` : ''}
+      ${r.letterLines && r.letterLines.length ? `<h4>Your letter</h4><blockquote class="parch">${r.letterLines.map(esc).join('<br>')}
+        ${r.signature ? `<br><img class="sig" src="${r.signature}" alt="signature">` : r.typedSignature ? `<br><i>${esc(r.typedSignature)}</i>` : ''}</blockquote>` : ''}
+      ${written.map((d) => `<h4>${(SKILLS[d.skill] || ['📝'])[0]} ${esc(d.q)}</h4><div class="written">${d.written.img ? `<img src="${d.written.img}" alt="handwritten answer">` : `<p>${esc(d.written.text)}</p>`}</div><p class="small">Self-check: ${d.ticks} of ${d.tickMax} points included.</p>`).join('')}
       <h4>What really happened to ${esc(ch.short)}?</h4><p>${esc(ch.fate)}</p>
       <h4>Think about it</h4><p><b>${esc(ch.reflection)}</b></p>
       <div class="lines">${'<div></div>'.repeat(forPrint ? 6 : 0)}</div>
+      ${progress.signature ? `<p class="signed">Signed: <img src="${progress.signature}" alt="pupil signature"></p>` : ''}
     </div>`;
 }
 
@@ -731,6 +1053,8 @@ function showFinale() {
       <h3>Henry's six wives</h3>${wivesHTML(all)}
       <p class="rhyme">"Divorced, beheaded, died; divorced, beheaded, survived."</p>
       <p>All three of Henry's children became rulers: <b>Edward VI</b> (1547–1553), <b>Mary I</b> (1553–1558) and <b>Elizabeth I</b> (1558–1603).</p>
+      <div class="inv-final">🏺 You found <b>${foundCount()} of ${TOTAL_TREASURES}</b> Tudor objects for the King's Inventory.
+        ${foundCount() === TOTAL_TREASURES ? '<br><b>🏅 Master of the King\'s Inventory! You found every single object!</b>' : '<br>Some objects only appear in certain chapters. Replay a chapter to hunt for the rest!'}</div>
       <div class="row"><button class="btn" id="print">🖨️ Print all my reports</button><button class="btn primary" id="ok">Finish ▶</button></div>`, 'wide');
     p.querySelector('#print').onclick = () => printHTML(CHAPTERS.filter((c) => progress.completed[c.id]).map((c) => reportHTML(c, progress.completed[c.id], true)).join('<div class="pagebreak"></div>'));
     p.querySelector('#ok').onclick = () => { closePanel(); resolve(); };
@@ -742,7 +1066,7 @@ function openNotebook(tab = 'sources') {
   if (G.mode !== 'play') return;
   setMode('ui');
   const s = G.s, ch = G.ch;
-  const tabs = { sources: '🔍 Sources', facts: '📜 Facts', wives: '👑 Wives', timeline: '⏳ Timeline', palace: '🏰 Palace' };
+  const tabs = { sources: '🔍 Sources', inventory: '🏺 Inventory', facts: '📜 Facts', words: '📚 Word Bank', wives: '👑 Wives', timeline: '⏳ Timeline', palace: '🏰 Palace' };
   const body = () => {
     if (tab === 'sources') {
       const list = ch.sources.filter((x) => s.sources[x.id]);
@@ -754,7 +1078,24 @@ function openNotebook(tab = 'sources') {
       const ev = TIMELINE.filter((e) => e.ch < ch.id || (e.ch === ch.id && (e.at === 's' || s.flags.chapterDone)));
       return `<ol class="timeline">${ev.map((e) => `<li><b>${e.y}</b><span>${esc(e.t)}</span></li>`).join('')}<li class="now"><b>Now</b><span>You are ${esc(ch.advisor)}, ${esc(ch.years)}. What happens next? Play on to find out!</span></li></ol>`;
     }
-    return AREAS.map((a) => `<div class="note"><h4>${esc(a.name)}</h4><p>${esc(a.blurb)}</p></div>`).join('');
+    if (tab === 'inventory') {
+      const n = foundCount();
+      return `<p class="inv-sum">🏺 You have found <b>${n} of ${TOTAL_TREASURES}</b> Tudor objects. Look for the <b>sparkles ✨</b> around the palace, and tap them!</p>
+        <div class="inv-grid">${OBJECTS.map((o) => {
+          const got = progress.inventory[o.id];
+          const here = !o.ch || o.ch.includes(ch.id);
+          return got
+            ? `<button class="inv got" data-o="${o.id}">${o.img ? `<img src="${imgURL(o.img)}" alt="">` : `<span class="inv-ico">${ICONS[o.id] || '🏺'}</span>`}<b>${esc(o.name)}</b><small>${esc(o.area)}</small></button>`
+            : `<div class="inv"><span class="inv-ico q">?</span><b>???</b><small>${esc(o.area)}${here ? '' : ` · appears in Chapter ${o.ch.join(' & ')}`}</small></div>`;
+        }).join('')}</div>`;
+    }
+    if (tab === 'words') {
+      const seen = new Set(s.words || []);
+      return `<p>Tricky words are <span class="gloss demo">underlined</span>: tap them to see what they mean. Here are all the words in the game.</p>
+        <dl class="words">${[...GLOSSARY].sort((a, b) => a.w.localeCompare(b.w)).map((g) => `<div class="${seen.has(g.w) ? 'seen' : ''}"><dt>${esc(g.w)}${seen.has(g.w) ? ' ✔' : ''}</dt><dd>${esc(g.d)}</dd></div>`).join('')}</dl>`;
+    }
+    return '<p>Hampton Court Palace still stands beside the River Thames, and you can visit it today. Here is how each part looks now.</p>' + AREAS.map((a) => `<div class="note palace-note">${a.photo ? `<figure class="tpic"><img src="${imgURL(a.photo)}" alt="${esc(a.name)}" loading="lazy"><figcaption>${creditLine(a.photo)}</figcaption></figure>` : ''}<div><h4>${esc(a.name)}</h4><p>${esc(a.blurb)}</p></div></div>`).join('')
+      + '<p class="small muted">Some photos show the palace today. Parts have changed since Tudor times: the Privy Garden, for example, was replanted for King William III around 1700.</p>';
   };
   const render = () => {
     const p = openPanel(`<div class="kicker">📖 Notebook</div>
@@ -762,6 +1103,8 @@ function openNotebook(tab = 'sources') {
       <div class="tabbody">${body()}</div>
       <div class="row"><span></span><button class="btn primary" id="close">Close</button></div>`, 'wide notebook');
     p.querySelectorAll('[data-t]').forEach((b) => { b.onclick = () => { tab = b.dataset.t; render(); }; });
+    p.querySelectorAll('[data-o]').forEach((b) => { b.onclick = async () => { closePanel(); await examineTreasure(OBJECTS.find((o) => o.id === b.dataset.o)); tab = 'inventory'; setMode('ui'); render(); }; });
+    if (tab !== 'inventory' && tab !== 'words') glossify(p.querySelector('.tabbody'));
     p.querySelector('#close').onclick = () => { closePanel(); setMode('play'); };
   };
   render();
@@ -832,6 +1175,10 @@ function showSettings() {
         <p class="small">Enter the teacher code to unlock all chapters. (See the README.)</p>
         <div class="row"><input id="s-code" inputmode="numeric" placeholder="Code" maxlength="8"><button class="btn" id="s-unlock">Unlock all chapters</button></div>
         <p><button class="btn danger" id="s-reset">Delete all progress on this iPad</button></p>
+      </details>
+      <details class="teacher"><summary>Picture credits</summary>
+        <p class="small">Real paintings and photographs come from Wikimedia Commons. Paintings from Tudor times are in the public domain. Photographs are shared under Creative Commons licences.</p>
+        <ul class="credits small">${Object.entries(CREDITS).map(([k, c]) => `<li><b>${esc(k)}</b>: ${esc(c.title)}. ${esc(c.artist)}. <a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.license)}</a></li>`).join('')}</ul>
       </details>
       <div class="row"><span></span><button class="btn primary" id="ok">Done</button></div>`, 'card');
     const upd = () => {
@@ -928,6 +1275,7 @@ async function startChapter(ch, saved, fresh = false) {
   loadChapter(ch, saved);
   renderer.render(scene, camera);
   $('#loading').classList.remove('show');
+  if (saved && saved.s.flags.chapterDone) return finishChapter(); // carry on with the ending and quiz
   if (!saved) {
     setMode('ui');
     await cardSequence(ch.intro, { title: `Chapter ${ch.id} · ${ch.title}`, finalLabel: 'Begin ▶' });
@@ -938,7 +1286,7 @@ async function startChapter(ch, saved, fresh = false) {
 }
 
 // ---------------- Map drawing ----------------
-const MAPB = { x1: -62, x2: 62, z1: -57, z2: 52 };
+const MAPB = { x1: -98, x2: 62, z1: -57, z2: 52 };
 function mapXf(W, H) {
   const pad = W * 0.04;
   const s = Math.min((W - pad * 2) / (MAPB.x2 - MAPB.x1), (H - pad * 2) / (MAPB.z2 - MAPB.z1));
@@ -953,12 +1301,15 @@ function drawMapBackground(W, H, labels = false) {
   g.fillStyle = '#6f9a4f'; g.fillRect(0, 0, W, H);
   const [, ry] = f(0, 50.5);
   g.fillStyle = '#4c7a8f'; g.fillRect(0, ry, W, H - ry);
-  const cols = { court: '#cdbf9f', room: '#efe2c2', garden: '#8fb66a' };
+  const cols = { court: '#cdbf9f', room: '#efe2c2', garden: '#8fb66a', outside: '#86ad62' };
   for (const a of AREAS) {
     const [x1, y1] = f(a.x1, a.z1), [x2, y2] = f(a.x2, a.z2);
     g.fillStyle = cols[a.kind];
     g.fillRect(x1, y1, x2 - x1, y2 - y1);
   }
+  // the moat and bridge
+  { const [mx1, my1] = f(-76, -30), [mx2, my2] = f(-66, 30); g.fillStyle = '#4c7a8f'; g.fillRect(mx1, my1, mx2 - mx1, my2 - my1);
+    const [bx1, by1] = f(-76, -3), [bx2, by2] = f(-66, 3); g.fillStyle = '#c9b88f'; g.fillRect(bx1, by1, bx2 - bx1, by2 - by1); }
   g.strokeStyle = '#8e3a24';
   g.lineWidth = Math.max(2, s * 0.8);
   g.lineCap = 'round';
@@ -1034,9 +1385,10 @@ function collide(x, z) {
 
 function interactables() {
   const out = [];
-  for (const [, n] of G.npcs) if (n.group.visible) out.push({ x: n.group.position.x, z: n.group.position.z, r: 2.6, label: `💬 Talk to ${n.def.name}`, go: () => talkTo(n) });
-  for (const [id, s] of G.sources) if (s.group.visible) out.push({ x: s.x, z: s.z, r: s.def.kind === 'carving' ? 3.2 : 2.2, label: G.s.sources[id] ? `🔍 Look again: ${s.def.name}` : `🔍 Examine: ${s.def.name}`, go: () => examineSource(s) });
-  for (const [, sp] of G.spots) if (spotEnabled(sp)) out.push({ x: sp.x, z: sp.z, r: 2.2, label: `✒️ ${sp.def.label}`, go: () => useSpot(sp) });
+  for (const [, n] of G.npcs) if (n.group.visible) out.push({ x: n.group.position.x, z: n.group.position.z, y: 1.3 * (n.def.look.scale || 1), r: 2.6, npc: true, label: `💬 Talk to ${n.def.name}`, go: () => talkTo(n) });
+  for (const [id, s] of G.sources) if (s.group.visible) out.push({ x: s.x, z: s.z, y: s.def.kind === 'carving' ? 4 : 1.2, r: s.def.kind === 'carving' ? 3.2 : 2.2, label: G.s.sources[id] ? `🔍 Look again: ${s.def.name}` : `🔍 Examine: ${s.def.name}`, go: () => examineSource(s) });
+  for (const [, sp] of G.spots) if (spotEnabled(sp)) out.push({ x: sp.x, z: sp.z, y: 1, r: 2.2, label: `✒️ ${sp.def.label}`, go: () => useSpot(sp) });
+  for (const o of G.treasures) out.push({ x: o.pos[0], z: o.pos[1], y: o.y, r: o.r || 2.2, treasure: true, label: progress.inventory[o.id] ? `🏺 Look again: ${o.name}` : `✨ Examine: ${o.name}`, go: () => examineTreasure(o) });
   return out;
 }
 
@@ -1168,7 +1520,32 @@ function loop(now) {
   renderer.render(scene, camera);
 }
 
+// ---------------- Tapping on things in the 3D world ----------------
+const raycaster = new THREE.Raycaster();
+controls.onTap = (cx, cy) => {
+  if (G.mode !== 'play') return;
+  const ndc = new THREE.Vector2((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const o = raycaster.ray.origin, d = raycaster.ray.direction;
+  const here = areaAt(G.pos.x, G.pos.z);
+  let best = null, bestScore = Infinity;
+  for (const it of interactables()) {
+    const v = new THREE.Vector3(it.x - o.x, (it.y ?? 1) - o.y, it.z - o.z);
+    const along = v.dot(d);
+    if (along < 0.3 || along > 11) continue;
+    const off = v.clone().sub(d.clone().multiplyScalar(along)).length();
+    const tol = it.npc ? 0.75 : Math.max(0.55, Math.min(1.6, (it.r || 2) * 0.32)) + along * 0.02;
+    if (off > tol) continue;
+    const there = areaAt(it.x, it.z);
+    if (here && there && here.id !== there.id && Math.hypot(it.x - G.pos.x, it.z - G.pos.z) > 4) continue; // not through walls
+    const score = off / tol + along * 0.03;
+    if (score < bestScore) { bestScore = score; best = it; }
+  }
+  if (best) best.go();
+};
+
 // ---------------- HUD buttons ----------------
+$('#inv-chip').onclick = () => openNotebook('inventory');
 $('#act').onclick = () => { if (actTarget && G.mode === 'play') actTarget.go(); };
 $('#btn-notes').onclick = () => openNotebook();
 $('#btn-map').onclick = () => openMap();

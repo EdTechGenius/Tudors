@@ -182,7 +182,7 @@ body.in-dialogue #act, body.in-dialogue #guide, body.in-dialogue #toasts { displ
 .lpart .btn { width: 100%; margin-bottom: 6px; font-size: 0.95rem; padding: 9px 12px; min-height: 44px; }
 .lpart .btn.picked { background: #fff1c4; border-color: var(--red); box-shadow: 0 0 0 2px var(--red) inset; }
 .lpart .btn.locked { background: #eee6d6; }
-.parchment { position: sticky; top: 0; background: #f3e4bd; border: 1px solid #c9a86a; border-radius: 4px; padding: 22px 22px 70px; min-height: 320px;
+.parchment { position: relative; background: #f3e4bd; border: 1px solid #c9a86a; border-radius: 4px; padding: 22px 22px 70px; min-height: 320px;
   font-family: "Snell Roundhand", "Apple Chancery", "Lucida Calligraphy", var(--serif); font-size: 1.15rem; line-height: 1.5; box-shadow: inset 0 0 40px rgba(140, 100, 40, 0.35), var(--shadow); }
 body.easy-read .parchment { font-family: Verdana, Arial, sans-serif; font-size: 1rem; }
 .parchment .to { font-family: var(--serif); font-weight: 700; margin-bottom: 10px; color: var(--red-dark); }
@@ -292,3 +292,129 @@ body.easy-read .parchment { font-family: Verdana, Arial, sans-serif; font-size: 
   .report.print .parch { background: #f4f4f4; }
   .pagebreak { page-break-after: always; break-after: page; }
 }
+
+/* ===================== Update 2: inventory, glossary, quill, quizzes ===================== */
+.portrait, .wimg, .chap img, .adv img { object-fit: cover; object-position: 50% 18%; background: #3a2a1a; }
+
+/* Inventory chip in the HUD */
+.chip { display: flex; align-items: center; gap: 6px; border: 2px solid var(--gold); background: rgba(246, 236, 210, 0.95); border-radius: 12px; padding: 6px 10px; font-weight: 700; box-shadow: var(--shadow); min-height: 44px; }
+.chip small { font-size: 9px; font-weight: 700; display: block; margin-left: 2px; }
+.chip.pulse { animation: pop 0.6s; }
+
+/* Glossary words */
+.gloss { border-bottom: 2px dotted #b07a1a; cursor: help; color: inherit; background: rgba(244, 215, 122, 0.25); border-radius: 3px; padding: 0 1px; }
+#dialogue.narrator .gloss { border-bottom-color: var(--gold-light); background: rgba(244, 215, 122, 0.15); }
+#gloss-pop { position: fixed; z-index: 60; background: #fffaf0; border: 3px solid var(--gold); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); font-size: 1rem; line-height: 1.45; }
+#gloss-pop b { font-family: var(--serif); color: var(--red-dark); font-size: 1.1rem; }
+#gloss-pop .speak { width: 34px; height: 34px; font-size: 15px; float: right; margin-left: 8px; }
+.gloss.demo { cursor: default; }
+
+/* Real pictures */
+.tpic { margin: 8px 0; text-align: center; }
+.tpic img { max-width: 100%; max-height: 300px; border-radius: 8px; border: 3px solid var(--gold); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); background: #f3e4bd; }
+.tpic figcaption { font-size: 0.72rem; color: #8a7660; margin-top: 4px; }
+.tpic figcaption a { color: #8a6a3a; }
+.treasure.has-pic { display: grid; grid-template-columns: minmax(160px, 40%) 1fr; gap: 16px; align-items: start; }
+.treasure .t-all p { font-size: 1.05rem; line-height: 1.6; }
+.didyou { background: #fff3cc; border-left: 5px solid var(--gold); padding: 10px 12px; border-radius: 6px; }
+.panel.treasure-card { width: min(760px, 100%); }
+.palace-note { display: grid; grid-template-columns: 200px 1fr; gap: 14px; align-items: start; }
+.palace-note .tpic { margin: 0; }
+.palace-note .tpic img { max-height: 150px; }
+
+/* Inventory grid */
+.inv-sum { font-size: 1.05rem; }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.inv { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; padding: 8px; border: 2px dashed #d5bf8a; border-radius: 10px; background: rgba(255, 250, 240, 0.6); font-size: 0.85rem; }
+.inv.got { border-style: solid; border-color: var(--gold); background: #fffaf0; cursor: pointer; }
+.inv img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+.inv-ico { font-size: 36px; line-height: 64px; height: 64px; }
+.inv-ico.q { color: #b8a27a; font-family: var(--serif); font-weight: 700; }
+.inv small { color: #8a7660; }
+.inv-final { background: #fff3cc; border: 2px solid var(--gold); border-radius: 12px; padding: 12px; margin-top: 10px; text-align: center; }
+
+/* Word bank */
+.words { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.words > div { background: #fffaf0; border: 1px solid var(--parch-dark); border-radius: 8px; padding: 8px 10px; }
+.words > div.seen { border-color: var(--gold); }
+.words dt { font-family: var(--serif); font-weight: 700; color: var(--red-dark); }
+.words dd { margin: 2px 0 0; font-size: 0.9rem; }
+
+/* Quill pad */
+.quill-pad { position: relative; border: 2px solid #c9a86a; border-radius: 8px; overflow: hidden; touch-action: none;
+  background: #f3e4bd; box-shadow: inset 0 0 40px rgba(140, 100, 40, 0.3); }
+.quill-pad.lined { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 43px, rgba(120, 90, 50, 0.28) 43px, rgba(120, 90, 50, 0.28) 45px), radial-gradient(ellipse at center, #f6eacb, #ead6a5); }
+.quill-pad canvas { position: absolute; inset: 0; touch-action: none; cursor: crosshair; }
+.quill-guide { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 85%; opacity: 0.22; pointer-events: none; }
+.quill-guide-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: "Snell Roundhand", "Apple Chancery", var(--serif); font-size: 3rem; color: rgba(60, 40, 20, 0.2); pointer-events: none; }
+.quill-placeholder { position: absolute; left: 14px; top: 10px; color: rgba(90, 70, 40, 0.55); font-style: italic; pointer-events: none; }
+.quill-tools { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.quill-tools .btn { min-height: 44px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; }
+.inkpot { position: relative; display: inline-block; width: 22px; height: 26px; border: 2px solid #2b1a0e; border-radius: 4px 4px 9px 9px; background: #e8dcc0; overflow: hidden; }
+.ink-level { position: absolute; left: 0; right: 0; bottom: 0; background: #20140a; transition: height 0.3s; }
+.ink-btn.empty { border-color: var(--bad); animation: blink 1s infinite; }
+.ink-btn.dip { animation: pop 0.5s; }
+.sign-box { margin-top: 12px; border-top: 2px dashed var(--gold); padding-top: 8px; }
+.sign-box h3 { font-size: 1rem; }
+.typed-toggle { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.typed-toggle input { width: 22px; height: 22px; }
+#typedsig, #typedans { width: 100%; font-size: 1.1rem; padding: 10px; border-radius: 8px; border: 2px solid var(--gold); background: #fffaf0; margin-top: 6px; font-family: inherit; }
+#lsig { display: block; max-width: 70%; max-height: 70px; margin-top: 6px; }
+#lsigtyped { font-family: "Snell Roundhand", "Apple Chancery", var(--serif); font-size: 1.5rem; }
+.panel.quill-panel { width: min(820px, 100%); }
+
+/* Quiz question types */
+.skill-tag { display: inline-block; margin: 4px 0 2px; padding: 4px 10px; border-radius: 14px; font-weight: 700; font-size: 0.85rem; background: #efe0b9; border: 2px solid var(--gold); }
+.skill-retrieve { background: #e3f0ff; border-color: #5f9ad6; }
+.skill-infer { background: #f3e6ff; border-color: #9a6ad6; }
+.skill-vocab { background: #e6f7e6; border-color: #4fa25f; }
+.skill-predict { background: #fff0db; border-color: #d6973a; }
+.skill-explain { background: #fff9d6; border-color: #c9a43b; }
+.skill-summarise { background: #ffe6e6; border-color: #d65f5f; }
+.skill-sequence { background: #e6fbfb; border-color: #3aa8a8; }
+.gap-sentence { font-size: 1.2rem; line-height: 2.4; }
+.gap { min-width: 120px; min-height: 40px; border: 2px dashed var(--gold); border-radius: 8px; background: #fffaf0; font: inherit; font-weight: 700; padding: 2px 10px; vertical-align: middle; }
+.gap.filled { border-style: solid; background: #fff1c4; }
+.gap.right { background: #dff3e3; border-color: var(--good); }
+.gap.wrong { background: #fbe1de; border-color: var(--bad); }
+.bank { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.bank.col { flex-direction: column; }
+.tile { text-align: center; }
+.bank.col .tile { text-align: left; }
+.match { display: flex; flex-direction: column; gap: 10px; }
+.mrow { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; }
+.mrow b { font-family: var(--serif); color: var(--red-dark); font-size: 1.1rem; }
+.mrow select { font: inherit; font-size: 1rem; padding: 10px; border-radius: 10px; border: 2px solid var(--gold); background: #fffaf0; min-height: 48px; width: 100%; }
+.mrow select.right { border-color: var(--good); background: #dff3e3; }
+.mrow select.wrong { border-color: var(--bad); background: #fbe1de; }
+.order-list { min-height: 40px; background: #fffaf0; border: 2px dashed var(--gold); border-radius: 10px; padding: 8px 8px 8px 34px; margin: 8px 0; }
+.order-list li { padding: 4px 0; font-weight: 600; }
+.model { background: #fff3cc; border-left: 5px solid var(--gold); padding: 8px 12px; border-radius: 6px; }
+.checklist .set { border-bottom: 1px dashed var(--parch-dark); }
+
+/* Report extras */
+.report .sig { max-height: 60px; margin-top: 6px; }
+.report .written { background: #f3e4bd; border-radius: 8px; padding: 8px; }
+.report .written img { max-width: 100%; max-height: 180px; }
+.skills { display: flex; flex-wrap: wrap; gap: 6px; }
+.sk { padding: 3px 8px; border-radius: 10px; font-size: 0.82rem; border: 1px solid var(--parch-dark); }
+.sk.ok { background: #dff3e3; }
+.sk.no { background: #fbe1de; }
+.signed img { max-height: 50px; vertical-align: middle; }
+.credits li { margin-bottom: 4px; }
+
+@media (max-width: 760px) {
+  .treasure.has-pic, .palace-note { grid-template-columns: 1fr; }
+  .mrow { grid-template-columns: 1fr; }
+}
+@media print {
+  .report.print .written { background: #fff; border: 1px solid #999; }
+}
+
+.letter-right { position: sticky; top: 0; }
+.letter-right .parchment { min-height: 230px; padding-bottom: 60px; }
+@media (max-width: 760px) { .letter-right { position: static; } }
+
+.feedback .model p { font-weight: 400; }
+
+.icon-pic span { display: flex; align-items: center; justify-content: center; height: 180px; font-size: 96px; background: radial-gradient(circle, #fff6dc, #ecdcb0); border: 3px solid var(--gold); border-radius: 12px; }

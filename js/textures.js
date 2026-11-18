@@ -325,3 +325,155 @@ export function parchment(lines = 6) {
   for (let i = 0; i < lines; i++) g.fillRect(14, 18 + i * 16, 80 + ((i * 37) % 20), 3);
   return toTexture(c, false);
 }
+
+// ---------- Extra textures for a more realistic Hampton Court ----------
+
+// Tudor windows were made of small diamond-shaped panes held together with lead strips.
+export function leaded(lit = false) {
+  const [c, g] = canvas(64, 64);
+  g.fillStyle = lit ? '#dfeaf0' : '#2a3542';
+  g.fillRect(0, 0, 64, 64);
+  if (!lit) {
+    const grad = g.createLinearGradient(0, 0, 64, 64);
+    grad.addColorStop(0, 'rgba(160,190,220,0.25)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 64, 64);
+  }
+  g.strokeStyle = lit ? '#6c7178' : '#11161c';
+  g.lineWidth = 2.5;
+  for (let i = -64; i <= 128; i += 16) {
+    g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.stroke();
+    g.beginPath(); g.moveTo(i, 64); g.lineTo(i + 64, 0); g.stroke();
+  }
+  return toTexture(c);
+}
+
+// Heraldic stained glass, like the windows of the Great Hall and Chapel Royal.
+export function stainedGlass(seed = 1) {
+  const [c, g] = canvas(128, 256);
+  const r = rng(seed);
+  const cols = ['#c9a43b', '#8e1f22', '#24407a', '#2f6b3a', '#e8dcb0', '#6b2a6b'];
+  for (let y = 0; y < 256; y += 16) {
+    for (let x = 0; x < 128; x += 16) {
+      g.fillStyle = r() < 0.6 ? '#e8e2c8' : cols[Math.floor(r() * cols.length)];
+      g.fillRect(x, y, 16, 16);
+    }
+  }
+  // a shield with the royal colours
+  g.fillStyle = '#24407a';
+  g.beginPath(); g.moveTo(24, 70); g.lineTo(104, 70); g.lineTo(104, 140); g.quadraticCurveTo(104, 190, 64, 206); g.quadraticCurveTo(24, 190, 24, 140); g.closePath(); g.fill();
+  g.fillStyle = '#8e1f22';
+  g.fillRect(64, 70, 40, 68); g.fillRect(24, 138, 40, 55);
+  g.fillStyle = '#e8c45a';
+  for (const [x, y] of [[44, 100], [84, 160], [44, 120], [84, 100]]) { g.beginPath(); g.arc(x, y, 7, 0, Math.PI * 2); g.fill(); }
+  // red rose on top
+  g.fillStyle = '#c0141c'; g.beginPath(); g.arc(64, 40, 18, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f2efe4'; g.beginPath(); g.arc(64, 40, 9, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#1a1a1a'; g.lineWidth = 2;
+  for (let x = 0; x <= 128; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 256); g.stroke(); }
+  for (let y = 0; y <= 256; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(128, y); g.stroke(); }
+  return toTexture(c, false);
+}
+
+// Hampton Court's famous chimneys are decorated with spirals, zig-zags and diamonds.
+export function chimneyBrick() {
+  const [c, g] = canvas(64, 128);
+  g.fillStyle = '#a5452f';
+  g.fillRect(0, 0, 64, 128);
+  g.fillStyle = '#c9654a';
+  for (let i = -128; i < 256; i += 22) {
+    g.beginPath(); g.moveTo(0, i); g.lineTo(64, i + 40); g.lineTo(64, i + 50); g.lineTo(0, i + 10); g.fill();
+  }
+  g.strokeStyle = 'rgba(60,20,10,0.5)';
+  g.lineWidth = 1;
+  for (let y = 0; y < 128; y += 8) { g.beginPath(); g.moveTo(0, y); g.lineTo(64, y); g.stroke(); }
+  return toTexture(c);
+}
+
+// Cardinal Wolsey's coat of arms, which still survives in terracotta above Anne Boleyn's Gateway.
+export function wolseyArms() {
+  const [c, g] = canvas(256, 256);
+  g.fillStyle = '#b5683f'; g.fillRect(0, 0, 256, 256);
+  g.strokeStyle = '#7a3f22'; g.lineWidth = 8; g.strokeRect(6, 6, 244, 244);
+  // cardinal's hat
+  g.fillStyle = '#8e1f22';
+  g.beginPath(); g.ellipse(128, 48, 70, 14, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(128, 34, 30, 18, 0, Math.PI, 0); g.fill();
+  g.strokeStyle = '#8e1f22'; g.lineWidth = 4;
+  for (const s of [-1, 1]) for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(128 + s * (50 + i * 6), 52); g.lineTo(128 + s * (60 + i * 10), 110 + i * 25); g.stroke(); }
+  // shield
+  g.fillStyle = '#e9dcc0';
+  g.beginPath(); g.moveTo(78, 70); g.lineTo(178, 70); g.lineTo(178, 150); g.quadraticCurveTo(178, 210, 128, 230); g.quadraticCurveTo(78, 210, 78, 150); g.closePath(); g.fill();
+  g.fillStyle = '#1a1a1a'; g.fillRect(78, 125, 100, 16); // the cross band
+  g.fillStyle = '#8e1f22'; g.beginPath(); g.arc(128, 100, 14, 0, Math.PI * 2); g.fill(); // a rose
+  g.fillStyle = '#c9a43b';
+  for (const [x, y] of [[100, 170], [156, 170], [128, 200]]) { g.beginPath(); g.arc(x, y, 9, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#3a1a0a'; g.font = 'bold 15px Georgia'; g.textAlign = 'center';
+  g.fillText('DOMINVS MIHI ADIVTOR', 128, 247);
+  return toTexture(c, false);
+}
+
+// Glazed terracotta roundels of Roman emperors, made for Wolsey by Giovanni da Maiano in 1521.
+export function roundel(seed = 1) {
+  const [c, g] = canvas(128, 128);
+  g.fillStyle = '#e8dcc0'; g.beginPath(); g.arc(64, 64, 63, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#3a6aa8'; g.beginPath(); g.arc(64, 64, 52, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#c9a43b'; g.lineWidth = 6; g.beginPath(); g.arc(64, 64, 57, 0, Math.PI * 2); g.stroke();
+  // bust of an emperor (profile)
+  g.fillStyle = '#efe6d2';
+  g.beginPath(); g.ellipse(64, 112, 34, 26, 0, Math.PI, 0); g.fill();
+  g.beginPath(); g.ellipse(62, 60, 20, 25, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(80, 56); g.lineTo(88, 68); g.lineTo(79, 70); g.fill(); // nose
+  g.fillStyle = '#2f6b3a';
+  for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse(48 + i * 6, 38 + Math.abs(i - 2.5) * 2, 6, 4, 0.5, 0, Math.PI * 2); g.fill(); } // laurel wreath
+  g.fillStyle = '#c9a43b'; g.font = 'bold 11px Georgia'; g.textAlign = 'center';
+  g.fillText(['TIBERIVS', 'NERO', 'TRAIANVS', 'HADRIANVS', 'IVLIVS', 'VITELLIVS'][seed % 6], 64, 22);
+  return toTexture(c, false);
+}
+
+// Henry VIII's royal coat of arms (as used 1528 onwards: England quartered with France,
+// supported by a lion and a dragon/greyhound).
+export function royalArms() {
+  const [c, g] = canvas(256, 256);
+  g.fillStyle = 'rgba(0,0,0,0)'; g.clearRect(0, 0, 256, 256);
+  g.fillStyle = '#d9c9a3'; g.fillRect(8, 8, 240, 240);
+  g.strokeStyle = '#8a7650'; g.lineWidth = 8; g.strokeRect(8, 8, 240, 240);
+  // crown
+  g.fillStyle = '#d9ab3c';
+  g.beginPath(); g.moveTo(88, 60); g.lineTo(96, 30); g.lineTo(112, 50); g.lineTo(128, 24); g.lineTo(144, 50); g.lineTo(160, 30); g.lineTo(168, 60); g.closePath(); g.fill();
+  // shield quartered: France (blue, gold lilies) and England (red, gold lions)
+  const sx = 80, sy = 70, sw = 96, sh = 120;
+  g.save();
+  g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + sw, sy); g.lineTo(sx + sw, sy + 70); g.quadraticCurveTo(sx + sw, sy + sh, sx + sw / 2, sy + sh + 14); g.quadraticCurveTo(sx, sy + sh, sx, sy + 70); g.closePath(); g.clip();
+  for (let i = 0; i < 4; i++) {
+    const qx = sx + (i % 2) * sw / 2, qy = sy + Math.floor(i / 2) * (sh / 2 + 7);
+    const france = i === 0 || i === 3;
+    g.fillStyle = france ? '#24407a' : '#a51d22';
+    g.fillRect(qx, qy, sw / 2, sh / 2 + 7);
+    g.fillStyle = '#e8c45a';
+    if (france) { for (const [dx, dy] of [[12, 14], [36, 14], [24, 40]]) { g.beginPath(); g.arc(qx + dx, qy + dy, 6, 0, Math.PI * 2); g.fill(); } }
+    else { for (let k = 0; k < 3; k++) g.fillRect(qx + 8, qy + 8 + k * 18, 32, 8); }
+  }
+  g.restore();
+  // supporters: lion and dragon
+  g.fillStyle = '#d9ab3c'; g.beginPath(); g.ellipse(52, 150, 22, 50, -0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(56, 92, 16, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#a51d22'; g.beginPath(); g.ellipse(204, 150, 22, 50, 0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.arc(200, 92, 16, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#3a2410'; g.font = 'bold 14px Georgia'; g.textAlign = 'center';
+  g.fillText('DIEU ET MON DROIT', 128, 232);
+  return toTexture(c, false);
+}
+
+export function sparkle() {
+  const [c, g] = canvas(64, 64);
+  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 30);
+  grad.addColorStop(0, 'rgba(255,255,230,1)');
+  grad.addColorStop(0.25, 'rgba(255,220,110,0.9)');
+  grad.addColorStop(1, 'rgba(255,200,60,0)');
+  g.fillStyle = grad; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = 'rgba(255,255,240,0.95)';
+  g.beginPath(); g.moveTo(32, 0); g.lineTo(36, 28); g.lineTo(64, 32); g.lineTo(36, 36); g.lineTo(32, 64); g.lineTo(28, 36); g.lineTo(0, 32); g.lineTo(28, 28); g.closePath(); g.fill();
+  return toTexture(c, false);
+}

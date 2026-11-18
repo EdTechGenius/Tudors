@@ -38,6 +38,7 @@ export class Controls {
     if (!this.enabled) return;
     e.preventDefault();
     const touchLike = e.pointerType !== 'mouse';
+    this.tapStart = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now() };
     if (touchLike && e.clientX < window.innerWidth * 0.45 && this.joyId === null) {
       this.joyId = e.pointerId;
       this.joyStart = { x: e.clientX, y: e.clientY };
@@ -71,6 +72,12 @@ export class Controls {
   }
 
   up(e) {
+    const ts = this.tapStart;
+    if (ts && ts.id === e.pointerId && performance.now() - ts.t < 350 && Math.hypot(e.clientX - ts.x, e.clientY - ts.y) < 12 && this.onTap) {
+      this.tapStart = null;
+      this.onTap(e.clientX, e.clientY);
+    }
+    if (ts && ts.id === e.pointerId) this.tapStart = null;
     if (e.pointerId === this.joyId) {
       this.joyId = null;
       this.move.x = this.move.y = 0;
