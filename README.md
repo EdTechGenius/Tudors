@@ -51,6 +51,14 @@ Each chapter ends with a 10-question quiz. Every question is labelled with the r
 - **put events in order**;
 - **written answers** with the quill. Pupils then compare their answer with a model answer and tick a self-check list. Their handwriting appears on the Royal Report, so you can see what they actually wrote.
 
+### 🖼️ Paintings and the Long Gallery
+More than 20 real Tudor paintings hang around the palace. Pupils can **tap any painting** to see it full screen and zoom in. Each one says when it was painted and who painted it, describes what it shows, and gives a **"Look closely"** challenge (for example, finding the hidden skull in Holbein's *The Ambassadors*, or asking why Jane Seymour appears in a family portrait painted eight years after she died).
+
+A new room, **the Long Gallery** (through the door on the south side of Clock Court), is lined with portraits of Henry's family, wives, advisors and rival kings. New portraits appear as the story moves on, so pupils don't meet future wives too early.
+
+### 🎵 Background music
+*Greensleaves* plays quietly on a lute and a recorder. The music is created by the game itself, so there are no audio files to download. Tap **🎵 Music** (next to Menu) to turn it on or off; the volume is in Settings. The music gets quieter whenever text is read aloud. Settings also explains the popular myth that Henry VIII wrote *Greensleaves*: the tune was first published in 1580, long after his death. If you can't hear anything on an iPad, check that the iPad isn't on silent and that the volume is up.
+
 ### 📚 Word Bank
 Tricky words (for example *annul*, *dispensation*, *heir*, *treason*, *conscience*, *biased*) are underlined throughout the game. Pupils tap one to see a child-friendly definition, which can be read aloud. All the words are collected in the **Word Bank** tab of the notebook.
 

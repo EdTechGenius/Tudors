@@ -215,5 +215,61 @@
   "license": "CC BY-SA 2.0",
   "artist": "Jody Bowie",
   "source": "https://commons.wikimedia.org/wiki/File:Ceiling_Chapel_Royal_Hampton_Court_8563138206b.jpg"
+ },
+ "ambassadors": {
+  "file": "ambassadors.jpg",
+  "title": "Hans Holbein the Younger - The Ambassadors - Google Art Project.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1533 (National Gallery, London)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_the_Younger_-_The_Ambassadors_-_Google_Art_Project.jpg"
+ },
+ "edward": {
+  "file": "edward.jpg",
+  "title": "Hans Holbein d. J. - Portrait of Edward, Prince of Wales - WGA11563.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, c. 1538",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Portrait_of_Edward%2C_Prince_of_Wales_-_WGA11563.jpg"
+ },
+ "henry7": {
+  "file": "henry7.jpg",
+  "title": "King Henry VII.jpg",
+  "license": "Public domain",
+  "artist": "Unknown Netherlandish artist, 1505 (National Portrait Gallery)",
+  "source": "https://commons.wikimedia.org/wiki/File:King_Henry_VII.jpg"
+ },
+ "mary": {
+  "file": "mary.jpg",
+  "title": "Mary I in 1544.jpg",
+  "license": "Public domain",
+  "artist": "Master John, 1544",
+  "source": "https://commons.wikimedia.org/wiki/File:Mary_I_in_1544.jpg"
+ },
+ "elizabeth": {
+  "file": "elizabeth.jpg",
+  "title": "Elizabeth I when a Princess.jpg",
+  "license": "Public domain",
+  "artist": "Attributed to William Scrots, c. 1546 (Royal Collection)",
+  "source": "https://commons.wikimedia.org/wiki/File:Elizabeth_I_when_a_Princess.jpg"
+ },
+ "francis": {
+  "file": "francis.jpg",
+  "title": "Jean Clouet - Portrait of François I, King of France - WGA5081.jpg",
+  "license": "Public domain",
+  "artist": "Jean Clouet, c. 1530",
+  "source": "https://commons.wikimedia.org/wiki/File:Jean_Clouet_-_Portrait_of_Fran%C3%A7ois_I%2C_King_of_France_-_WGA5081.jpg"
+ },
+ "dover": {
+  "file": "dover.jpg",
+  "title": "The Embarkation of Henry VIII at Dover.jpg",
+  "license": "Public domain",
+  "artist": "Unknown artist, c. 1545 (Royal Collection, Hampton Court)",
+  "source": "https://commons.wikimedia.org/wiki/File:The_Embarkation_of_Henry_VIII_at_Dover.jpg"
+ },
+ "whitehall": {
+  "file": "whitehall.jpg",
+  "title": "Hans Holbein d. J. - Henry VIII and Henry VII - WGA11606.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1536–37 (National Portrait Gallery)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Henry_VIII_and_Henry_VII_-_WGA11606.jpg"
  }
 }

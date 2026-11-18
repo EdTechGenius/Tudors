@@ -9,7 +9,8 @@ import ch1 from './content/chapter1.js';
 import ch2 from './content/chapter2.js';
 import ch3 from './content/chapter3.js';
 import ch4 from './content/chapter4.js';
-import { OBJECTS, PAINTINGS, ICONS, forChapter } from './content/objects.js';
+import { OBJECTS, PAINTINGS, ICONS, PAINTING_INFO, galleryFor, forChapter } from './content/objects.js';
+import { Music } from './music.js';
 import { GLOSSARY, GLOSS_INDEX } from './content/glossary.js';
 import { createQuillPad } from './quill.js';
 
@@ -30,13 +31,33 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } },
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
-const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1 }, seenHowTo: false, inventory: {}, signature: null });
+const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1, music: true, musicVol: 0.5 }, seenHowTo: false, inventory: {}, signature: null });
 let progress = { ...defaultProgress(), ...store.get(PKEY, {}) };
 progress.inventory = progress.inventory || {};
 progress.settings = { ...defaultProgress().settings, ...(progress.settings || {}) };
 const saveProgress = () => store.set(PKEY, progress);
 
+const music = new Music();
+function applyMusicButton() {
+  const b = $('#btn-music');
+  if (b) b.innerHTML = progress.settings.music ? '🎵<span>Music on</span>' : '🔇<span>Music off</span>';
+}
+function setMusic(on) {
+  progress.settings.music = on;
+  saveProgress();
+  music.setEnabled(on);
+  applyMusicButton();
+}
+// Browsers only allow sound after the first tap, so start the music then.
+const firstTap = () => { if (progress.settings.music) music.start(); };
+document.addEventListener('pointerdown', firstTap, { capture: true });
+document.addEventListener('keydown', firstTap, { capture: true });
+document.addEventListener('visibilitychange', () => { if (document.hidden) music.pause(); else music.resume(); });
+
 function applySettings() {
+  music.enabled = !!progress.settings.music;
+  music.setVolume(progress.settings.musicVol ?? 0.5);
+  applyMusicButton();
   document.body.classList.toggle('easy-read', !!progress.settings.easyRead);
   document.body.classList.toggle('big-text', !!progress.settings.bigText);
   controls.sensitivity = progress.settings.look || 1;
@@ -66,6 +87,8 @@ function speak(html) {
   const v = voices.find((x) => x.lang === 'en-GB') || voices.find((x) => x.lang && x.lang.startsWith('en'));
   if (v) u.voice = v;
   u.rate = 0.95;
+  music.duck(true);
+  u.onend = u.onerror = () => music.duck(false);
   speechSynthesis.speak(u);
 }
 const autoSpeak = (t) => { if (progress.settings.autoRead) speak(t); };
@@ -110,6 +133,7 @@ const G = {
 };
 window.__game = G; // handy for teachers' debugging and automated tests
 G.debugFinish = () => finishChapter();
+window.__music = () => music;
 
 function freshState(ch) {
   return { flags: {}, sources: {}, facts: [], favour: ch.meters.favour, honesty: ch.meters.honesty, letter: null };
@@ -142,7 +166,8 @@ function loadChapter(ch, saved) {
   G.ch = ch;
   G.s = saved ? saved.s : freshState(ch);
   G.treasures = forChapter(OBJECTS, ch.id);
-  G.world = buildWorld(scene, { ...ch.era, objects: G.treasures, paintings: forChapter(PAINTINGS, ch.id) });
+  G.paintings = [...forChapter(PAINTINGS, ch.id), ...galleryFor(ch.id)];
+  G.world = buildWorld(scene, { ...ch.era, objects: G.treasures, paintings: G.paintings });
   G.sparkles = new THREE.Points(new THREE.BufferGeometry(), new THREE.PointsMaterial({ map: TX.sparkle(), size: 0.55, transparent: true, depthWrite: false, color: 0xffffff }));
   scene.add(G.sparkles);
   updateSparkles();
@@ -517,6 +542,40 @@ async function examineTreasure(o) {
   closePanel();
   if (r === 'quill') await quillActivity();
   setMode(before === 'ui' ? 'play' : 'play');
+}
+
+// Tap a painting to see it full size, with information and a "look closely" challenge.
+async function openPainting(key) {
+  const info = PAINTING_INFO[key];
+  if (!info) return;
+  const before = G.mode;
+  setMode('ui');
+  const p = openPanel(`
+    <div class="kicker">🖼️ ${G.area && G.area.id === 'gallery' ? 'The Long Gallery' : 'A painting at Hampton Court'}</div>
+    <div class="lightbox">
+      <div class="lb-frame" title="Tap to zoom in or out"><img src="${imgURL(key)}" alt="${esc(info.title)}"></div>
+      <div class="lb-info">
+        <div class="card-head"><h2>${esc(info.title)}</h2>${speakBtn('.lb-text')}</div>
+        <p class="small"><b>When was it painted?</b> ${esc(info.when)}<br><b>Who painted it?</b> ${esc(info.who)}</p>
+        <div class="lb-text"><p>${esc(info.text)}</p><p class="didyou"><b>🔍 Look closely:</b> ${esc(info.look)}</p></div>
+        <p class="small muted">Tap the painting to zoom in. ${creditLine(key)}</p>
+      </div>
+    </div>
+    <div class="row"><span></span><button class="btn primary" id="ok">Close</button></div>`, 'wide painting-panel');
+  glossify(p.querySelector('.lb-text'));
+  autoSpeak(info.title + '. ' + info.text + ' Look closely: ' + info.look);
+  const frame = p.querySelector('.lb-frame');
+  frame.onclick = (e) => {
+    const zoomed = frame.classList.toggle('zoomed');
+    if (zoomed) {
+      const r = frame.getBoundingClientRect();
+      const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height;
+      requestAnimationFrame(() => { frame.scrollLeft = fx * (frame.scrollWidth - r.width); frame.scrollTop = fy * (frame.scrollHeight - r.height); });
+    }
+  };
+  await new Promise((r) => { p.querySelector('#ok').onclick = r; });
+  closePanel();
+  setMode(before === 'dialogue' ? 'play' : 'play');
 }
 
 // Write like a Tudor: trace Henry VIII's real signature, then sign your own name.
@@ -1171,6 +1230,9 @@ function showSettings() {
       <label class="set"><input type="checkbox" id="s-easy" ${st.easyRead ? 'checked' : ''}> 🔤 Easy-read text (clearer letters, more spacing)</label>
       <label class="set"><input type="checkbox" id="s-big" ${st.bigText ? 'checked' : ''}> 🔎 Bigger text</label>
       <label class="set">👀 Look speed <input type="range" id="s-look" min="0.4" max="2" step="0.1" value="${st.look}"></label>
+      <label class="set"><input type="checkbox" id="s-music" ${st.music ? 'checked' : ''}> 🎵 Background music</label>
+      <label class="set">🔉 Music volume <input type="range" id="s-mvol" min="0.05" max="1" step="0.05" value="${st.musicVol ?? 0.5}"></label>
+      <p class="small muted">🎵 The music is <b>"Greensleaves"</b>. Legend says Henry VIII wrote it for Anne Boleyn, but there is no evidence for this: the tune was first published in 1580, more than 30 years after Henry died! It is a good example of a story that is often repeated but is probably not true.</p>
       <details class="teacher"><summary>For teachers</summary>
         <p class="small">Enter the teacher code to unlock all chapters. (See the README.)</p>
         <div class="row"><input id="s-code" inputmode="numeric" placeholder="Code" maxlength="8"><button class="btn" id="s-unlock">Unlock all chapters</button></div>
@@ -1186,6 +1248,8 @@ function showSettings() {
       st.easyRead = p.querySelector('#s-easy').checked;
       st.bigText = p.querySelector('#s-big').checked;
       st.look = +p.querySelector('#s-look').value;
+      st.musicVol = +p.querySelector('#s-mvol').value;
+      if (!!p.querySelector('#s-music').checked !== !!st.music) setMusic(p.querySelector('#s-music').checked);
       applySettings();
       saveProgress();
     };
@@ -1388,6 +1452,10 @@ function interactables() {
   for (const [, n] of G.npcs) if (n.group.visible) out.push({ x: n.group.position.x, z: n.group.position.z, y: 1.3 * (n.def.look.scale || 1), r: 2.6, npc: true, label: `💬 Talk to ${n.def.name}`, go: () => talkTo(n) });
   for (const [id, s] of G.sources) if (s.group.visible) out.push({ x: s.x, z: s.z, y: s.def.kind === 'carving' ? 4 : 1.2, r: s.def.kind === 'carving' ? 3.2 : 2.2, label: G.s.sources[id] ? `🔍 Look again: ${s.def.name}` : `🔍 Examine: ${s.def.name}`, go: () => examineSource(s) });
   for (const [, sp] of G.spots) if (spotEnabled(sp)) out.push({ x: sp.x, z: sp.z, y: 1, r: 2.2, label: `✒️ ${sp.def.label}`, go: () => useSpot(sp) });
+  for (const pt of G.paintings) {
+    const info = PAINTING_INFO[pt.img];
+    if (info) out.push({ x: pt.pos[0], z: pt.pos[2], y: pt.pos[1], r: 3.4, painting: true, label: `🖼️ Look closely: ${info.title}`, go: () => openPainting(pt.img) });
+  }
   for (const o of G.treasures) out.push({ x: o.pos[0], z: o.pos[1], y: o.y, r: o.r || 2.2, treasure: true, label: progress.inventory[o.id] ? `🏺 Look again: ${o.name}` : `✨ Examine: ${o.name}`, go: () => examineTreasure(o) });
   return out;
 }
@@ -1534,7 +1602,7 @@ controls.onTap = (cx, cy) => {
     const along = v.dot(d);
     if (along < 0.3 || along > 11) continue;
     const off = v.clone().sub(d.clone().multiplyScalar(along)).length();
-    const tol = it.npc ? 0.75 : Math.max(0.55, Math.min(1.6, (it.r || 2) * 0.32)) + along * 0.02;
+    const tol = it.npc ? 0.75 : it.painting ? 0.95 : Math.max(0.55, Math.min(1.6, (it.r || 2) * 0.32)) + along * 0.02;
     if (off > tol) continue;
     const there = areaAt(it.x, it.z);
     if (here && there && here.id !== there.id && Math.hypot(it.x - G.pos.x, it.z - G.pos.z) > 4) continue; // not through walls
@@ -1546,6 +1614,8 @@ controls.onTap = (cx, cy) => {
 
 // ---------------- HUD buttons ----------------
 $('#inv-chip').onclick = () => openNotebook('inventory');
+$('#btn-music').onclick = () => setMusic(!progress.settings.music);
+applyMusicButton();
 $('#act').onclick = () => { if (actTarget && G.mode === 'play') actTarget.go(); };
 $('#btn-notes').onclick = () => openNotebook();
 $('#btn-map').onclick = () => openMap();
