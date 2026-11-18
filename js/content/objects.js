@@ -212,3 +212,57 @@ export const ICONS = {
   globe: '🌍', seal: '🔏', hourglass: '⏳', countingboard: '🧮', sundial: '☀️', posts: '🦁', bowls: '🎳', archery: '🏹',
   falcon: '🦅', skep: '🐝', barge: '🚣', herbs: '🌿',
 };
+
+// More paintings in the rooms (added in the second update).
+PAINTINGS.push(
+  { img: 'dover', pos: [-23.55, 3.2, -31.2], rot: Math.PI / 2, w: 3, h: 1.45, ch: [4] },
+  { img: 'ambassadors', pos: [37.55, 2.6, -5.6], rot: -Math.PI / 2, w: 1.9, h: 1.9, ch: [2, 3, 4] },
+);
+
+// Portraits for the Long Gallery, in order of importance. "from" = the first chapter in which
+// the portrait appears, so that pupils do not meet future wives too early.
+export const GALLERY = [
+  { img: 'henry7', aspect: 0.677, from: 1 }, { img: 'aragon', aspect: 0.728, from: 1 }, { img: 'boleyn', aspect: 0.765, from: 1 }, { img: 'mary', aspect: 0.773, from: 1 },
+  { img: 'whitehall', aspect: 0.509, from: 3 }, { img: 'seymour', aspect: 0.621, from: 3 }, { img: 'cleves', aspect: 0.75, from: 3 }, { img: 'edward', aspect: 0.779, from: 3 },
+  { img: 'howard', aspect: 1.008, from: 4 }, { img: 'parr', aspect: 0.901, from: 4 }, { img: 'elizabeth', aspect: 0.759, from: 3 },
+  { img: 'charles', aspect: 0.717, from: 1 }, { img: 'francis', aspect: 0.785, from: 1 }, { img: 'more', aspect: 0.795, from: 1 }, { img: 'wolsey', aspect: 0.828, from: 1 }, { img: 'cromwell', aspect: 0.821, from: 1 },
+];
+
+// Information shown when a painting is tapped and enlarged.
+export const PAINTING_INFO = {
+  family: { title: 'The Family of Henry VIII', when: 'About 1545', who: 'Unknown artist (Royal Collection)', text: 'Henry sits on his throne with his son Edward beside him, and Edward\'s mother, Jane Seymour, on the other side. His daughters Mary and Elizabeth stand further out. The painting was made to show that the Tudor family line was safe.', look: 'Jane Seymour had died eight years before this was painted. Why do you think the artist included her? Can you also spot the jester, Will Somer, in the archway?' },
+  clothofgold: { title: 'The Field of the Cloth of Gold', when: 'About 1545', who: 'British School (Royal Collection)', text: 'In 1520, Henry VIII met King Francis I of France near Calais. Both kings tried to impress the other with enormous tents, feasts and tournaments. The meeting cost a fortune, but the two countries were at war again within two years.', look: 'Can you find Henry on his horse, the golden fountain of wine, and the dragon flying in the sky?' },
+  dover: { title: 'The Embarkation of Henry VIII at Dover', when: 'About 1545', who: 'Unknown artist (Royal Collection)', text: 'This shows Henry\'s ships setting sail from Dover in 1520, on the way to the Field of the Cloth of Gold. Henry built up a strong navy of warships during his reign.', look: 'Look at the sails and flags. What colours and symbols tell you that these are the King\'s ships?' },
+  ambassadors: { title: 'The Ambassadors', when: '1533', who: 'Hans Holbein the Younger (National Gallery, London)', text: 'Holbein painted two French ambassadors who were visiting Henry\'s court in 1533, the year Henry married Anne Boleyn. The table is covered with globes, books and scientific instruments, showing how clever and well-travelled the men were.', look: 'There is a strange stretched shape on the floor. It is a hidden skull, which you can only see properly if you look at the painting from the side!' },
+  henry: { title: 'Henry VIII', when: 'About 1537', who: 'Hans Holbein the Younger (Thyssen-Bornemisza Museum, Madrid)', text: 'Holbein shows Henry in his late forties, wearing rich clothes covered in jewels and gold. He looks broad, strong and powerful, exactly as Henry wanted to be seen.', look: 'Find three things in this portrait that show how rich Henry was.' },
+  wolsey: { title: 'Cardinal Thomas Wolsey', when: '16th century', who: 'Unknown artist', text: 'Wolsey is shown in profile (from the side) in his red cardinal\'s robes and cap. He was the son of a butcher who became the most powerful man in England after the King.', look: 'Why might Wolsey have chosen to be painted wearing his cardinal\'s red robes?' },
+  more: { title: 'Sir Thomas More', when: '1527', who: 'Hans Holbein the Younger (Frick Collection, New York)', text: 'More wears a gold chain of office with the letter "S" repeated on it, a sign that he served the King. Holbein even painted the stubble on his chin!', look: 'Does Thomas More look happy, worried or thoughtful? What makes you think so?' },
+  cromwell: { title: 'Thomas Cromwell', when: '1532–33', who: 'Hans Holbein the Younger (Frick Collection, New York)', text: 'Cromwell sits at a desk holding a document, surrounded by papers and a book. He is shown as a hard-working, serious man of business.', look: 'What objects has Holbein included to show what Cromwell\'s job was?' },
+  cranmer: { title: 'Archbishop Thomas Cranmer', when: '1545', who: 'Gerlach Flicke (National Portrait Gallery, London)', text: 'Cranmer is shown holding a book, a sign of his learning and his work on the English Bible and prayers.', look: 'Cranmer did not grow a beard until after Henry died. Does this portrait show him with or without a beard?' },
+  charles: { title: 'Emperor Charles V', when: 'About 1516', who: 'Bernard van Orley', text: 'Charles was only a teenager here, but he would become the most powerful ruler in Europe, ruling Spain, the Netherlands and much of Germany and Italy. He was Catherine of Aragon\'s nephew.', look: 'The golden chain around his neck is the Order of the Golden Fleece, a very important badge. Why might rulers wear badges like this?' },
+  aragon: { title: 'Catherine of Aragon', when: 'About 1525', who: 'Unknown artist', text: 'Catherine was the daughter of the King and Queen of Spain. She was Henry\'s wife and queen for over twenty years.', look: 'What kind of headdress is she wearing? (Hint: it is shaped like the roof of a house!)' },
+  boleyn: { title: 'Anne Boleyn', when: 'Late 16th century (a copy of a lost portrait)', who: 'Unknown artist (National Portrait Gallery, London)', text: 'This famous portrait shows Anne with a "B" necklace. It was painted after her death, copying an earlier picture that is now lost.', look: 'This painting was made years after Anne died. Does that make it less useful as a source? Why?' },
+  seymour: { title: 'Jane Seymour', when: '1536–37', who: 'Hans Holbein the Younger (Kunsthistorisches Museum, Vienna)', text: 'Jane wears a pointed English gable hood and many jewels. Holbein painted her soon after she became queen.', look: 'Compare Jane\'s headdress with Anne Boleyn\'s. How are they different?' },
+  cleves: { title: 'Anne of Cleves', when: '1539', who: 'Hans Holbein the Younger (Louvre, Paris)', text: 'This is the portrait Henry saw before agreeing to marry Anne. She looks straight at us, calm and serious, in a rich red German dress.', look: 'Henry said she did not look like this portrait. Do you think Holbein made her look different? How could we find out?' },
+  howard: { title: 'Portrait of a Lady, perhaps Katherine Howard', when: 'About 1540', who: 'Hans Holbein the Younger (Royal Collection)', text: 'This tiny round painting, called a miniature, may show Catherine Howard. Historians are not completely sure who the lady is!', look: 'The title says "perhaps". Why might historians be unsure who is in a painting?' },
+  parr: { title: 'Catherine Parr', when: 'About 1545', who: 'Attributed to Master John (National Portrait Gallery, London)', text: 'Catherine Parr wears a splendid red and gold gown. She was a clever, well-read queen who wrote books of her own.', look: 'What can you tell about Catherine\'s wealth and importance from her clothes?' },
+  henry7: { title: 'King Henry VII', when: '1505', who: 'Unknown Netherlandish artist (National Portrait Gallery, London)', text: 'Henry VII was Henry VIII\'s father. He won the crown at the Battle of Bosworth in 1485 and began the Tudor dynasty. He holds a red rose, the badge of Lancaster.', look: 'What is the King holding in his hand, and what did it stand for?' },
+  whitehall: { title: 'Henry VIII and Henry VII', when: '1536–37', who: 'Hans Holbein the Younger (National Portrait Gallery, London)', text: 'This is part of Holbein\'s full-size drawing for a huge wall painting at Whitehall Palace. Henry VIII stands with his legs wide apart and his hands on his hips, looking straight at us. His father stands behind him.', look: 'How does Henry\'s pose make him look powerful? Try standing like him!' },
+  mary: { title: 'Princess Mary', when: '1544', who: 'Master John (National Portrait Gallery, London)', text: 'Mary was the daughter of Henry and Catherine of Aragon. She was 28 when this was painted. She later became Queen Mary I.', look: 'Look carefully at Mary\'s clothes and jewels. What do they tell us about her?' },
+  elizabeth: { title: 'Elizabeth I when a Princess', when: 'About 1546', who: 'Attributed to William Scrots (Royal Collection)', text: 'Elizabeth, the daughter of Henry and Anne Boleyn, was about 13 here. She holds a book and has another open beside her, showing that she was clever and well educated.', look: 'Why do you think Elizabeth chose to be painted with books?' },
+  edward: { title: 'Edward, Prince of Wales', when: 'About 1538', who: 'Hans Holbein the Younger', text: 'Edward was the son Henry had waited so long for. Holbein painted him as a baby and young child, dressed in rich red and gold like a little king.', look: 'How has Holbein made baby Edward look important, even though he is so young?' },
+  francis: { title: 'King Francis I of France', when: 'About 1530', who: 'Jean Clouet (Louvre, Paris)', text: 'Francis I was King of France and Henry\'s great rival. The two kings competed in everything, from palaces and clothes to wars.', look: 'Compare Francis with Henry. What do the two kings have in common?' },
+};
+
+// Picture positions along the walls of the Long Gallery: [x, z, rotation].
+const GALLERY_SLOTS = [
+  [-27.2, 26.55, Math.PI], [-23.3, 26.55, Math.PI], [-19.4, 26.55, Math.PI], [-15.5, 26.55, Math.PI], [-11.6, 26.55, Math.PI], [-7.7, 26.55, Math.PI],
+  [-27, 15.45, 0], [-23.3, 15.45, 0], [-13.4, 15.45, 0], [-9.4, 15.45, 0],
+];
+export function galleryFor(chId) {
+  return GALLERY.filter((g) => g.from <= chId).slice(0, GALLERY_SLOTS.length).map((g, i) => {
+    const [x, z, rot] = GALLERY_SLOTS[i];
+    const h = 1.5, w = Math.min(1.6, h * g.aspect);
+    return { img: g.img, pos: [x, 2.3, z], rot, w, h: w / g.aspect, gallery: true };
+  });
+}

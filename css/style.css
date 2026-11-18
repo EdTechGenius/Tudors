@@ -418,3 +418,14 @@ body.easy-read .parchment { font-family: Verdana, Arial, sans-serif; font-size: 
 .feedback .model p { font-weight: 400; }
 
 .icon-pic span { display: flex; align-items: center; justify-content: center; height: 180px; font-size: 96px; background: radial-gradient(circle, #fff6dc, #ecdcb0); border: 3px solid var(--gold); border-radius: 12px; }
+
+/* Painting lightbox */
+.panel.painting-panel { width: min(1100px, 100%); }
+.lightbox { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
+.lb-frame { border: 10px solid #c9a43b; outline: 3px solid #7a5a1a; box-shadow: 0 6px 24px rgba(0,0,0,0.45); background: #1a120a; max-height: 70vh; overflow: hidden; cursor: zoom-in; touch-action: pan-x pan-y; display: flex; justify-content: center; }
+.lb-frame img { display: block; max-width: 100%; max-height: calc(70vh - 20px); object-fit: contain; }
+.lb-frame.zoomed { overflow: auto; cursor: zoom-out; display: block; }
+.lb-frame.zoomed img { max-width: none; max-height: none; width: 220%; }
+.lb-text p { font-size: 1.05rem; line-height: 1.6; }
+@media (max-width: 860px) { .lightbox { grid-template-columns: 1fr; } }
+.hud-buttons .hbtn span { white-space: nowrap; }

@@ -26,6 +26,8 @@ export const AREAS = [
     blurb: 'Where important visitors waited to be "in the presence" of the King.' },
   { id: 'privy', photo: 'henry', name: 'Privy Chamber', x1: 38, z1: -15, x2: 50, z2: 15, kind: 'room',
     blurb: 'The King\'s private rooms. Only his closest servants and advisors were allowed in.' },
+  { id: 'gallery', name: 'The Long Gallery', x1: -30, z1: 15, x2: -6, z2: 27, kind: 'room',
+    blurb: 'Tudor palaces had long galleries where people could walk, talk and admire paintings, especially on rainy days. Tap a portrait to look at it closely. Hampton Court\'s real "Haunted Gallery" is said to be haunted by the ghost of Catherine Howard!' },
   { id: 'study', name: 'Your Study', x1: -6, z1: 15, x2: 10, z2: 27, kind: 'room',
     blurb: 'Your private office, with your writing desk. Come here to write letters.' },
   { id: 'garden', photo: 'privygarden', name: 'Privy Garden', x1: 26, z1: 15, x2: 60, z2: 50, kind: 'garden',
@@ -171,11 +173,14 @@ export function buildWorld(scene, era) {
   wall(6, -55, 6, -35, { neg: M.wash });
   wall(26, -35, 26, -15, { h: 12, neg: M.wash, winLit: { side: 'neg', ys: [5.5], every: 6, w: 2.2, hh: 4, glass: M.stained } });
   // Clock Court south side and the study
-  wall(-30, 15, -6, 15, { battlements: true, win: { ...courtWin, side: 'neg' } });
+  wall(-30, 15, -6, 15, { pos: M.panel, doors: [[-19.5, -16.5, 3.2]], battlements: true, win: { ...courtWin, side: 'neg', ys: [7] } });
+  // The Long Gallery
+  wall(-30, 27, -6, 27, { neg: M.panel, winLit: { side: 'neg', ys: [4.05], every: 3.9, w: 1.3, hh: 0.8 } });
+  wall(-30, 15, -30, 27, { pos: M.panel });
   wall(-6, 15, 10, 15, { pos: M.panel, doors: [[0, 3, 3.2]], battlements: true, win: { ...courtWin, side: 'neg', ys: [7] } });
   wall(10, 15, 26, 15, { battlements: true, win: { ...courtWin, side: 'neg' } });
   wall(-6, 27, 10, 27, { neg: M.panel, winLit: { side: 'neg', ys: [2.6], every: 5, w: 1.3, hh: 1.6 } });
-  wall(-6, 15, -6, 27, { pos: M.panel });
+  wall(-6, 15, -6, 27, { neg: M.panel, pos: M.panel });
   wall(10, 15, 10, 27, { neg: M.panel, winLit: { side: 'neg', ys: [2.6], every: 6, w: 1.3, hh: 1.6 } });
   // King's apartments
   wall(26, -15, 26, 15, { pos: M.panel, doors: [[-2, 2, 3.5]], battlements: true, win: { ...courtWin, side: 'neg' } });
@@ -238,6 +243,8 @@ export function buildWorld(scene, era) {
   B.plane(20, 20, M.stone, 16, 0.02, -25, { rotX: -Math.PI / 2, uv: 2 });
   B.plane(24, 30, M.boards, 38, 0.02, 0, { rotX: -Math.PI / 2, uv: 3 });
   B.plane(16, 12, M.boards, 2, 0.02, 21, { rotX: -Math.PI / 2, uv: 3 });
+  B.plane(24, 12, M.boards, -18, 0.02, 21, { rotX: -Math.PI / 2, uv: 3 });
+  B.box(20, 0.02, 2.4, M.rugRed, -18, 0.04, 21);
   // garden paths
   B.plane(3, 35, M.gravel, 43, 0.03, 32.5, { rotX: -Math.PI / 2, uv: 3 });
   B.plane(34, 3, M.gravel, 43, 0.031, 32, { rotX: -Math.PI / 2, uv: 3 });
@@ -249,6 +256,9 @@ export function buildWorld(scene, era) {
   B.plane(20, 20, M.chapelCeil, 16, 9, -25, { rotX: down, uv: 5 });
   B.plane(24, 30, M.wash, 38, 6, 0, { rotX: down, uv: 4 });
   B.plane(16, 12, M.wash, 2, 4.5, 21, { rotX: down, uv: 4 });
+  B.plane(24, 12, M.wash, -18, 5, 21, { rotX: down, uv: 4 });
+  for (let x = -28; x < -6; x += 2.4) B.box(0.3, 0.3, 12, M.darkWood, x, 4.85, 21);
+  for (const bx of [-24, -12]) B.box(1.8, 0.45, 0.6, M.oak, bx, 0.23, 21, { collide: true }); // benches for admiring the paintings
   for (let x = -22; x < 6; x += 3) B.box(0.35, 0.4, 20, M.darkWood, x, 7.8, -45);
   for (let x = 28; x < 50; x += 3) B.box(0.3, 0.3, 30, M.darkWood, x, 5.85, 0);
   for (let x = -4; x < 10; x += 3) B.box(0.3, 0.3, 12, M.darkWood, x, 4.35, 21);
@@ -675,7 +685,7 @@ function mulberry(a) {
 
 export function areaAt(x, z) {
   // garden/rooms before courts (courts are bigger)
-  const order = ['privy', 'presence', 'study', 'hall', 'kitchens', 'chapel', 'garden', 'base', 'clock', 'westfront'];
+  const order = ['privy', 'presence', 'study', 'gallery', 'hall', 'kitchens', 'chapel', 'garden', 'base', 'clock', 'westfront'];
   for (const id of order) {
     const a = AREAS.find((q) => q.id === id);
     if (x >= a.x1 && x <= a.x2 && z >= a.z1 && z <= a.z2) return a;
