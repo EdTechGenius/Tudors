@@ -27,7 +27,7 @@ Each chapter takes about **35–45 minutes**, roughly one lesson, or longer if p
    - 👑 **King's Favour**: flattery raises it, but if it reaches zero you are dismissed from court.
    - ⚖️ **Honesty**: telling the truth raises it, even when the King doesn't like it.
 5. **Write a letter** at their desk, building it from greetings, evidence and requests. Some options unlock only after finding the right source. Then they seal it with wax.
-6. **Report to the King**, then see **"What really happened"**, the updated **six wives tracker**, a 5-question **quiz** and a printable **Royal Report**.
+6. **Report to the King**, then see **"What really happened"**, the updated **six wives tracker**, an 11-question **quiz** (one attempt only) and a printable **Royal Report**.
 
 Palace staff (a Yeoman of the Guard, a page, a spit boy, a gardener and a musician) share bonus facts about Tudor life. The Great Kitchens and the toilet that seated 28 tend to be favourites.
 
@@ -44,12 +44,18 @@ Henry VIII really did keep an inventory: the list of his possessions made after 
 The quill responds to Apple Pencil pressure and writes thick and thin like a real nib. The ink runs out as you write, so pupils must **dip the quill** in the inkpot, and a fresh dip sometimes leaves a blot! Fingers work too. While a Pencil is being used, palm touches are ignored. A **"type instead"** option is available for pupils who need it.
 
 ### 🎓 Quizzes with a range of reading skills
-Each chapter ends with a 10-question quiz. Every question is labelled with the reading skill it practises (in the spirit of VIPERS): 📖 Retrieval, 🔍 Inference, 🔤 Vocabulary, 🔮 Prediction, 💡 Explanation, 📝 Summary and 🧩 Sequencing. The question types are:
-- multiple choice;
-- **fill the gap** using a word bank;
-- **match words to meanings**;
-- **put events in order**;
+Each chapter ends with an 11-question quiz. Every question is labelled with the reading skill it practises (in the spirit of VIPERS): 📖 Retrieval, 🔍 Inference, 🔤 Vocabulary, 🔮 Prediction, 💡 Explanation, 📝 Summary and 🧩 Sequencing. The question types are:
+- **multiple choice** with 4 believable options (6 when the question is about Henry's wives). The options are similar in length and shuffled every time, so the correct answer can't be spotted by its position or length;
+- **fill the gap**: a paragraph with 10 gaps, and a word bank that includes extra decoy words;
+- **match 5 words to their meanings**;
+- **put 5 events in order**, using the dates;
 - **written answers** with the quill. Pupils then compare their answer with a model answer and tick a self-check list. Their handwriting appears on the Royal Report, so you can see what they actually wrote.
+
+**One attempt only.** Every answer is locked and saved the moment it is given, so pupils can't go back and change it after seeing the correct answer. If a pupil closes the app part-way through, the quiz carries on from the same question next time. If they replay a chapter they've finished, they can explore again, but the quiz isn't offered again and their first report is kept. To let a pupil retake a quiz, go to Settings → *For teachers*, enter the teacher code and tap *Retake Ch 1*–*4*.
+
+**📤 Sending reports to you.** At the end of the quiz, pupils tap **Send to my teacher**. This opens the iPad's share options, so the report can be sent through Google Classroom, Seesaw, Showbie, email, AirDrop or Files, whichever your school uses. The report is a single picture that shows every question, the answer the pupil actually gave, the correct answer where they were wrong, and their handwritten answers. Pupils can also print the report or save it as a PDF.
+
+**"What really happened" slides** each have a real painting or photograph of the people and places mentioned.
 
 ### 🖼️ Paintings and the Long Gallery
 More than 20 real Tudor paintings hang around the palace. Pupils can **tap any painting** to see it full screen and zoom in. Each one says when it was painted and who painted it, describes what it shows, and gives a **"Look closely"** challenge (for example, finding the hidden skull in Holbein's *The Ambassadors*, or asking why Jane Seymour appears in a family portrait painted eight years after she died).
