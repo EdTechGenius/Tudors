@@ -92,7 +92,9 @@ export function createQuillPad(host, opts = {}) {
     return { x, y, base, alpha };
   }
 
+  let locked = false;
   canvas.addEventListener('pointerdown', (e) => {
+    if (locked) return;
     if (e.pointerType === 'pen') penSeen = true;
     if (penSeen && e.pointerType === 'touch') return; // palm rejection
     if (activeId !== null) return;
@@ -159,5 +161,6 @@ export function createQuillPad(host, opts = {}) {
       return out.toDataURL('image/png');
     },
     destroy() { window.removeEventListener('resize', size); },
+    lock() { locked = true; host.querySelectorAll('.quill-tools button').forEach((b) => { b.disabled = true; }); },
   };
 }

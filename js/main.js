@@ -437,9 +437,9 @@ function cardSequence(cards, { title = '', finalLabel = 'Continue' } = {}) {
       const p = openPanel(`
         ${title ? `<div class="kicker">${title}</div>` : ''}
         <div class="card-head">${c.icon ? `<span class="icon">${c.icon}</span>` : ''}${c.year ? `<span class="year">${esc(c.year)}</span>` : ''}<h2>${c.title}</h2>${speakBtn('.card-text')}</div>
-        <div class="card-text">${c.text}</div>
+        ${c.img ? `<div class="hist"><figure class="tpic"><img src="${imgURL(c.img)}" alt=""><figcaption>${creditLine(c.img)}</figcaption></figure><div class="card-text">${c.text}</div></div>` : `<div class="card-text">${c.text}</div>`}
         <div class="row"><span class="dots">${cards.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('')}</span>
-        <button class="btn primary" id="next">${i < cards.length - 1 ? 'Next ▶' : finalLabel}</button></div>`, 'card');
+        <button class="btn primary" id="next">${i < cards.length - 1 ? 'Next ▶' : finalLabel}</button></div>`, c.img ? 'wide card history-card' : 'card');
       autoSpeak(c.title + '. ' + c.text);
       glossify(p.querySelector('.card-text'));
       p.querySelector('#next').onclick = () => { i++; if (i < cards.length) show(); else { closePanel(); resolve(); } };
@@ -700,14 +700,15 @@ async function examineSource(src) {
   const q = d.question;
   const p = openPanel(body + `
     <div class="question"><h3>🕵️ Source detective: ${esc(q.q)}</h3>
-      <div class="opts">${q.options.map((o, i) => `<button class="btn choice" data-i="${i}">${esc(o.t)}</button>`).join('')}</div>
+      <div class="opts">${shuffle(q.options.map((_, k) => k)).map((k, pos) => `<button class="btn choice" data-i="${k}"><b class="letter">${'ABCD'[pos]}</b> ${esc(q.options[k].t)}</button>`).join('')}</div>
       <div class="feedback"></div>
     </div>`, 'card source');
   autoSpeak(d.name + '. ' + d.text + '. ' + d.about);
   glossify(p.querySelector('.src-all'));
   const i = await new Promise((r) => p.querySelectorAll('.opts [data-i]').forEach((b) => { b.onclick = () => r(+b.dataset.i); }));
   const opt = q.options[i];
-  p.querySelectorAll('.opts button').forEach((b, k) => {
+  p.querySelectorAll('.opts button').forEach((b) => {
+    const k = +b.dataset.i;
     b.disabled = true;
     if (q.options[k].ok) b.classList.add('right');
     else if (k === i) b.classList.add('wrong');
@@ -836,8 +837,20 @@ async function finishChapter() {
   G.s.flags.chapterDone = true;
   saveChapter(); // so a pupil who stops during the quiz can carry on next lesson
   const ch = G.ch;
-  await cardSequence(ch.history, { title: `What really happened · ${ch.years}`, finalLabel: 'Continue ▶' });
-  await showWivesUpdate();
+  const earlier = progress.completed[ch.id];
+  if (!G.s.quiz) { // (skip the slides if the pupil had already started the quiz before closing the app)
+    await cardSequence(ch.history, { title: `What really happened · ${ch.years}`, finalLabel: 'Continue ▶' });
+    await showWivesUpdate(earlier && earlier.quizDetails ? 'Continue ▶' : undefined);
+  }
+  if (earlier && earlier.quizDetails) {
+    // One attempt only: a pupil who replays a chapter keeps the report from their first attempt.
+    G.s.flags.reported = true;
+    store.del(SKEY);
+    await showReport(ch, earlier, `<p class="locked-note">🔒 You have already taken the quiz for this chapter, so your first report has been kept. Ask your teacher if you need to take it again.</p>`);
+    if (ch.id === 4) await showFinale();
+    showChapterSelect();
+    return;
+  }
   const qres = await runQuiz(ch.quiz);
   const quiz = qres.score;
   const srcCorrect = Object.values(G.s.sources).filter((x) => x.correct).length;
@@ -852,8 +865,7 @@ async function finishChapter() {
   };
   const pct = (result.sources / result.sourcesMax + result.letter / result.letterMax + result.quiz / result.quizMax) / 3;
   result.stars = pct >= 0.85 ? 3 : pct >= 0.6 ? 2 : 1;
-  const prev = progress.completed[ch.id];
-  if (!prev || result.stars >= prev.stars) progress.completed[ch.id] = result;
+  progress.completed[ch.id] = result;
   progress.unlocked = Math.max(progress.unlocked, Math.min(4, ch.id + 1));
   saveProgress();
   G.s.flags.reported = true;
@@ -892,14 +904,14 @@ function wivesHTML(statuses, highlight = {}) {
   }).join('')}</div>`;
 }
 
-function showWivesUpdate() {
+function showWivesUpdate(label = 'Take the quiz ▶') {
   const before = wifeStatusMap(G.ch.id, false), after = wifeStatusMap(G.ch.id, true);
   return new Promise((resolve) => {
     const p = openPanel(`<div class="kicker">👑 Henry's Six Wives</div><h2>Your wives tracker has been updated</h2>
       ${wivesHTML(after, before)}
       <p class="rhyme">"Divorced, beheaded, died; divorced, beheaded, survived."</p>
       <p class="small muted">Tip: the rhyme says "divorced", but Henry's first and fourth marriages were really <b>annulled</b> — declared never to have been true marriages at all.</p>
-      <div class="row"><span></span><button class="btn primary" id="ok">Take the quiz ▶</button></div>`, 'wide');
+      <div class="row"><span></span><button class="btn primary" id="ok">${label}</button></div>`, 'wide');
     p.querySelector('#ok').onclick = () => { closePanel(); resolve(); };
   });
 }
@@ -915,25 +927,33 @@ const SKILLS = {
 };
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 
-// The end-of-chapter quiz, with several different kinds of question.
+// The end-of-chapter quiz. Pupils get ONE attempt: every answer is saved the moment it is
+// given, and if the app is closed, the quiz carries on from the same question next time.
 function runQuiz(questions) {
+  G.s.quiz = G.s.quiz || { details: [], score: 0, pending: null };
+  const st = G.s.quiz;
+  const save = () => saveChapter();
   return new Promise((resolve) => {
-    let i = 0, score = 0;
-    const details = [];
     const show = () => {
+      const i = st.details.length;
+      if (i >= questions.length) { closePanel(); resolve({ score: st.score, max: questions.length, details: st.details }); return; }
       const q = questions[i];
       const [icon, skillName, skillHint] = SKILLS[q.skill] || ['❓', 'Question', ''];
-      const head = `<div class="kicker">🎓 Quiz · Question ${i + 1} of ${questions.length}</div>
+      const head = `<div class="kicker">🎓 Quiz · Question ${i + 1} of ${questions.length} · one attempt only</div>
         <div class="skill-tag skill-${q.skill}" title="${esc(skillHint)}">${icon} ${skillName}</div>`;
       let body = '';
-      if (q.type === 'mc') body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
-        <div class="opts">${q.options.map((o, k) => `<button class="btn choice" data-k="${k}">${esc(o)}</button>`).join('')}</div>`;
+      let order = [];
+      if (q.type === 'mc') {
+        order = shuffle(q.options.map((_, k) => k));
+        body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
+          <div class="opts">${order.map((k, pos) => `<button class="btn choice" data-k="${k}"><b class="letter">${'ABCDEF'[pos]}</b> ${esc(q.options[k])}</button>`).join('')}</div>`;
+      }
       if (q.type === 'gap') {
         let g = 0;
-        const sentence = esc(q.text).replace(/___/g, () => `<button class="gap" data-g="${g++}">&nbsp;</button>`);
+        const sentence = esc(q.text).replace(/___/g, () => `<button class="gap" data-g="${g++}"><span class="gnum">${g}</span>&nbsp;</button>`);
         body = `<div class="card-head"><h2 class="q">Fill in the gaps</h2>${speakBtn('.gap-sentence')}</div>
+          <p class="small muted">Tap a word to put it in the next empty gap. Tap a gap to empty it again. Be careful: there are some extra words that you will not need!</p>
           <p class="gap-sentence">${sentence}</p>
-          <p class="small muted">Tap a word to put it in the next empty gap. Tap a gap to empty it again.</p>
           <div class="bank">${shuffle(q.bank).map((w) => `<button class="btn tile" data-w="${esc(w)}">${esc(w)}</button>`).join('')}</div>
           <div class="row"><span></span><button class="btn primary" id="check" disabled>Check ✔</button></div>`;
       }
@@ -952,30 +972,35 @@ function runQuiz(questions) {
       }
       if (q.type === 'write') {
         body = `<div class="card-head"><h2 class="q">${esc(q.q)}</h2>${speakBtn('.q')}</div>
-          <p class="small muted">Write your answer with your quill. Use your Apple Pencil or your finger.</p>
+          <p class="small muted">Write your answer with your quill, using your Apple Pencil or your finger. You cannot change it once you have finished.</p>
           <div id="wpad"></div>
           <label class="small typed-toggle"><input type="checkbox" id="typeans"> I would rather type my answer</label>
           <textarea id="typedans" rows="4" placeholder="Type your answer here" hidden></textarea>
           <div class="row"><span></span><button class="btn primary" id="check" disabled>I've finished ✔</button></div>`;
       }
-      const p = openPanel(head + body + '<div class="feedback"></div>', q.type === 'write' ? 'wide quiz' : 'card quiz');
+      const p = openPanel(head + body + '<div class="feedback"></div>', q.type === 'write' || q.type === 'gap' ? 'wide quiz' : 'card quiz');
       autoSpeak(q.q || q.text);
+
+      // Record the answer straight away, so it can never be changed.
       const done = (ok, extra = {}) => {
-        if (ok) score++;
-        details.push({ skill: q.skill, ok, q: q.q || q.text, ...extra });
+        if (ok) st.score++;
+        const { feedbackHTML, ...keep } = extra;
+        st.details.push({ skill: q.skill, ok, q: q.q || 'Fill in the gaps', ...keep });
+        st.pending = null;
+        save();
         const fb = p.querySelector('.feedback');
-        fb.innerHTML = `${extra.feedbackHTML || `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : '❌ Not quite.'} ${esc(q.why || '')}</p>`}
-          <div class="row"><span>Score: ${score}/${i + 1}</span><button class="btn primary" id="next">${i < questions.length - 1 ? 'Next question ▶' : 'See my report ▶'}</button></div>`;
+        fb.innerHTML = `${feedbackHTML || `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : '❌ Not quite.'} ${esc(q.why || '')}</p>`}
+          <div class="row"><span>Score: ${st.score}/${st.details.length}</span><button class="btn primary" id="next">${st.details.length < questions.length ? 'Next question ▶' : 'See my report ▶'}</button></div>`;
         fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        p.querySelector('#next').onclick = () => { i++; if (i < questions.length) show(); else { closePanel(); resolve({ score, max: questions.length, details }); } };
+        p.querySelector('#next').onclick = () => show();
       };
 
       if (q.type === 'mc') {
         p.querySelectorAll('[data-k]').forEach((b) => {
           b.onclick = () => {
             const k = +b.dataset.k, ok = k === q.answer;
-            p.querySelectorAll('[data-k]').forEach((x, j) => { x.disabled = true; if (j === q.answer) x.classList.add('right'); else if (j === k) x.classList.add('wrong'); });
-            done(ok);
+            p.querySelectorAll('[data-k]').forEach((x) => { x.disabled = true; const kk = +x.dataset.k; if (kk === q.answer) x.classList.add('right'); else if (kk === k) x.classList.add('wrong'); });
+            done(ok, { given: q.options[k], correct: q.options[q.answer] });
           };
         });
       }
@@ -983,17 +1008,20 @@ function runQuiz(questions) {
         const gaps = [...p.querySelectorAll('.gap')];
         const fill = Array(gaps.length).fill(null);
         const upd = () => {
-          gaps.forEach((g, k) => { g.textContent = fill[k] || ' '; g.classList.toggle('filled', !!fill[k]); });
+          gaps.forEach((g, k) => { g.innerHTML = `<span class="gnum">${k + 1}</span>${fill[k] ? esc(fill[k]) : '&nbsp;'}`; g.classList.toggle('filled', !!fill[k]); });
           p.querySelectorAll('.tile').forEach((t) => { t.disabled = fill.includes(t.dataset.w); });
           p.querySelector('#check').disabled = fill.includes(null);
         };
         p.querySelectorAll('.tile').forEach((t) => { t.onclick = () => { const k = fill.indexOf(null); if (k >= 0) { fill[k] = t.dataset.w; upd(); } }; });
         gaps.forEach((g, k) => { g.onclick = () => { fill[k] = null; upd(); }; });
         p.querySelector('#check').onclick = () => {
-          const ok = fill.every((w, k) => w === q.answers[k]);
+          const right = fill.filter((w, k) => w === q.answers[k]).length;
           gaps.forEach((g, k) => { g.disabled = true; g.classList.add(fill[k] === q.answers[k] ? 'right' : 'wrong'); });
           p.querySelectorAll('.tile, #check').forEach((b) => { b.disabled = true; });
-          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Correct!' : `❌ Not quite. The answers were: <b>${q.answers.map(esc).join('</b>, <b>')}</b>.`} ${esc(q.why)}</p>` });
+          const ok = right >= Math.ceil(q.answers.length * 0.8);
+          done(ok, { given: fill.map((w, k) => `${k + 1}. ${w}`).join(', '), correct: q.answers.map((w, k) => `${k + 1}. ${w}`).join(', '), part: `${right}/${q.answers.length} gaps`,
+            feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${right === q.answers.length ? '✅ Every gap is correct!' : `You filled ${right} of ${q.answers.length} gaps correctly.`} ${ok ? '' : '(You need at least ' + Math.ceil(q.answers.length * 0.8) + ' to get the mark.)'}</p>
+              <p class="small"><b>The answers were:</b> ${q.answers.map((w, k) => `${k + 1}. ${esc(w)}`).join(' · ')}</p><p class="small">${esc(q.why)}</p>` });
         };
         upd();
       }
@@ -1005,7 +1033,8 @@ function runQuiz(questions) {
           sels.forEach((sl, k) => { const ok = sl.value === q.pairs[k][1]; if (ok) right++; sl.disabled = true; sl.classList.add(ok ? 'right' : 'wrong'); });
           p.querySelector('#check').disabled = true;
           const ok = right === q.pairs.length;
-          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ All matched correctly!' : `❌ You matched ${right} of ${q.pairs.length}.`}</p><ul class="small">${q.pairs.map(([w, m]) => `<li><b>${esc(w)}</b>: ${esc(m)}</li>`).join('')}</ul>` });
+          done(ok, { given: sels.map((sl, k) => `${q.pairs[k][0]} = ${sl.value}`).join('; '), correct: q.pairs.map(([w, m]) => `${w} = ${m}`).join('; '), part: `${right}/${q.pairs.length} matched`,
+            feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ All matched correctly!' : `❌ You matched ${right} of ${q.pairs.length}.`}</p><ul class="small">${q.pairs.map(([w, m]) => `<li><b>${esc(w)}</b>: ${esc(m)}</li>`).join('')}</ul>` });
         };
       }
       if (q.type === 'order') {
@@ -1021,7 +1050,8 @@ function runQuiz(questions) {
         p.querySelector('#check').onclick = () => {
           const ok = chosen.every((t, k) => t === q.items[k]);
           p.querySelectorAll('.tile, #check, #reset').forEach((b) => { b.disabled = true; });
-          done(ok, { feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Perfect order!' : '❌ Not quite. The correct order is:'}</p>${ok ? '' : `<ol class="small">${q.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`}<p class="small">${esc(q.why)}</p>` });
+          done(ok, { given: chosen.join(' → '), correct: q.items.join(' → '),
+            feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? '✅ Perfect order!' : '❌ Not quite. The correct order is:'}</p>${ok ? '' : `<ol class="small">${q.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`}<p class="small">${esc(q.why)}</p>` });
         };
         upd();
       }
@@ -1034,41 +1064,60 @@ function runQuiz(questions) {
         };
         p.querySelector('#typeans').onchange = () => { const t = p.querySelector('#typeans').checked; typedBox.hidden = !t; p.querySelector('#wpad').hidden = t; chk(); };
         typedBox.oninput = chk;
-        p.querySelector('#check').onclick = () => {
-          const typed = p.querySelector('#typeans').checked;
-          const answer = typed ? { text: typedBox.value.trim() } : { img: pad.toDataURL(560) };
+        const showMarking = (answer) => {
+          // Lock the answer, then show the model answer for self-checking.
+          pad.lock();
           p.querySelector('#check').disabled = true;
-          p.querySelectorAll('#wpad button, #typeans').forEach((b) => { b.disabled = true; });
+          p.querySelector('#typeans').disabled = true;
           typedBox.disabled = true;
+          if (answer.img) { const w = p.querySelector('#wpad'); w.hidden = false; w.innerHTML = `<div class="written locked"><img src="${answer.img}" alt="Your answer"></div>`; }
+          if (answer.text) { typedBox.hidden = false; typedBox.value = answer.text; p.querySelector('#wpad').hidden = true; }
           const fb = p.querySelector('.feedback');
-          fb.innerHTML = `<div class="model"><h3>💡 A model answer</h3><p>${esc(q.model)}</p></div>
+          fb.innerHTML = `<p class="small"><b>🔒 Your answer has been saved and can no longer be changed.</b></p>
+            <div class="model"><h3>💡 A model answer</h3><p>${esc(q.model)}</p></div>
             <h3>✔️ Check your own answer: tick what you included</h3>
             <div class="checklist">${q.checklist.map((c, k) => `<label class="set"><input type="checkbox" data-c="${k}"> ${esc(c)}</label>`).join('')}</div>
-            <div class="row"><span class="small muted">Be honest! Your teacher can see your answer on your report.</span><button class="btn primary" id="marked">Done ✔</button></div>`;
+            <div class="row"><span class="small muted">Be honest! Your teacher will see exactly what you wrote.</span><button class="btn primary" id="marked">Done ✔</button></div>`;
           autoSpeak('A model answer. ' + q.model);
           fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           fb.querySelector('#marked').onclick = () => {
             const ticks = fb.querySelectorAll('input:checked').length;
-            const ok = ticks >= Math.ceil(q.checklist.length / 2) + (q.checklist.length > 2 ? 0 : 0);
+            const ok = ticks >= Math.ceil(q.checklist.length / 2);
             done(ok, { written: answer, ticks, tickMax: q.checklist.length,
               feedbackHTML: `<p class="${ok ? 'good' : 'bad'}">${ok ? `✅ Well done! You ticked ${ticks} of ${q.checklist.length}.` : `🤔 You ticked ${ticks} of ${q.checklist.length}. Look again at the model answer to see what you could add next time.`}</p>` });
           };
         };
+        p.querySelector('#check').onclick = () => {
+          const typed = p.querySelector('#typeans').checked;
+          const answer = typed ? { text: typedBox.value.trim() } : { img: pad.toDataURL(560) };
+          st.pending = { index: i, answer };
+          save();
+          showMarking(answer);
+        };
+        // Coming back after closing the app: the answer was already written, so go straight to self-checking.
+        if (st.pending && st.pending.index === i) showMarking(st.pending.answer);
       }
     };
     show();
   });
 }
 
+function answerListHTML(details) {
+  return `<ol class="answers">${details.map((d) => `<li class="${d.ok ? 'ok' : 'no'}">
+    <div class="aq">${(SKILLS[d.skill] || ['❓'])[0]} ${esc(d.q)}</div>
+    ${d.written ? (d.written.img ? `<div class="written"><img src="${d.written.img}" alt="handwritten answer"></div>` : `<div class="written"><p>${esc(d.written.text)}</p></div>`) + `<div class="small">Self-check: ${d.ticks} of ${d.tickMax} points included ${d.ok ? '✓' : '✗'}</div>`
+      : `<div class="ag"><b>Answer given:</b> ${esc(d.given || '')} ${d.part ? `(${esc(d.part)})` : ''} ${d.ok ? '✓' : '✗'}</div>${d.ok ? '' : `<div class="ac"><b>Correct answer:</b> ${esc(d.correct || '')}</div>`}`}
+  </li>`).join('')}</ol>`;
+}
+
 function reportHTML(ch, r, forPrint = false) {
   const bar = (v) => `<span class="rbar"><span style="width:${v}%"></span></span> ${v}%`;
   const skills = (r.quizDetails || []).map((d) => `<span class="sk ${d.ok ? 'ok' : 'no'}">${(SKILLS[d.skill] || ['❓'])[0]} ${(SKILLS[d.skill] || ['', '?'])[1]} ${d.ok ? '✓' : '✗'}</span>`).join('');
-  const written = (r.quizDetails || []).filter((d) => d.written);
   return `
     <div class="report ${forPrint ? 'print' : ''}">
       <div class="rhead"><div class="rose">🌹</div><div><h2>Royal Report</h2><div>${esc(progress.name || 'Pupil')} · ${esc(r.date)}</div></div><div class="stars">${'⭐'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}</div></div>
       <h3>Chapter ${ch.id}: ${esc(ch.title)} (${esc(ch.years)})</h3>
-      <p>You played <b>${esc(ch.advisor)}</b>.</p>
+      <p>You played <b>${esc(ch.advisor)}</b>. <span class="small muted">Quiz: first and only attempt.</span></p>
       <table>
         <tr><td>👑 King's Favour</td><td>${bar(r.favour)}</td></tr>
         <tr><td>⚖️ Honesty</td><td>${bar(r.honesty)}</td></tr>
@@ -1079,14 +1128,115 @@ function reportHTML(ch, r, forPrint = false) {
         <tr><td>🏺 King's Inventory</td><td>${r.inventory ?? foundCount()} / ${TOTAL_TREASURES} Tudor objects found (whole game)</td></tr>
       </table>
       ${skills ? `<h4>Reading skills in the quiz</h4><div class="skills">${skills}</div>` : ''}
+      ${r.quizDetails && r.quizDetails.length ? `<h4>Every quiz answer</h4>${answerListHTML(r.quizDetails)}` : ''}
       ${r.letterLines && r.letterLines.length ? `<h4>Your letter</h4><blockquote class="parch">${r.letterLines.map(esc).join('<br>')}
         ${r.signature ? `<br><img class="sig" src="${r.signature}" alt="signature">` : r.typedSignature ? `<br><i>${esc(r.typedSignature)}</i>` : ''}</blockquote>` : ''}
-      ${written.map((d) => `<h4>${(SKILLS[d.skill] || ['📝'])[0]} ${esc(d.q)}</h4><div class="written">${d.written.img ? `<img src="${d.written.img}" alt="handwritten answer">` : `<p>${esc(d.written.text)}</p>`}</div><p class="small">Self-check: ${d.ticks} of ${d.tickMax} points included.</p>`).join('')}
       <h4>What really happened to ${esc(ch.short)}?</h4><p>${esc(ch.fate)}</p>
       <h4>Think about it</h4><p><b>${esc(ch.reflection)}</b></p>
       <div class="lines">${'<div></div>'.repeat(forPrint ? 6 : 0)}</div>
       ${progress.signature ? `<p class="signed">Signed: <img src="${progress.signature}" alt="pupil signature"></p>` : ''}
+      ${r.sentAt ? `<p class="small muted">📤 Sent to teacher: ${esc(r.sentAt)}</p>` : ''}
     </div>`;
+}
+
+// ---------- Sending the report to the teacher ----------
+// The report is drawn as one tall picture (PNG), which can be shared from the iPad to
+// Google Classroom, Seesaw, Showbie, email, AirDrop or Files.
+const loadImg = (src) => new Promise((res) => { if (!src) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
+
+async function reportImage(ch, r) {
+  const W = 1240, PAD = 60, maxW = W - PAD * 2;
+  const c = document.createElement('canvas');
+  const g = c.getContext('2d');
+  const font = (size, bold = false, serif = false) => `${bold ? 'bold ' : ''}${size}px ${serif ? 'Georgia, serif' : 'Helvetica, Arial, sans-serif'}`;
+  const wrap = (text, f, width) => {
+    g.font = f;
+    const words = String(text).split(/\s+/); const lines = []; let line = '';
+    for (const w of words) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > width && line) { lines.push(line); line = w; } else line = t; }
+    if (line) lines.push(line);
+    return lines;
+  };
+  const sig = await loadImg(r.signature);
+  const pupilSig = await loadImg(progress.signature);
+  const written = await Promise.all((r.quizDetails || []).map((d) => loadImg(d.written && d.written.img)));
+  // Build a list of drawing steps, measuring the height as we go.
+  const ops = []; let y = PAD;
+  const text = (t, f, color = '#2a1a0a', indent = 0, gap = 8) => {
+    const size = parseInt(f.match(/(\d+)px/)[1], 10);
+    for (const line of wrap(t, f, maxW - indent)) { const yy = y; ops.push(() => { g.font = f; g.fillStyle = color; g.fillText(line, PAD + indent, yy + size); }); y += size * 1.3; }
+    y += gap;
+  };
+  const image = (im, maxHt) => {
+    if (!im) return;
+    const s = Math.min(1, (maxW - 20) / im.width, maxHt / im.height);
+    const w = im.width * s, h = im.height * s, yy = y;
+    ops.push(() => { g.fillStyle = '#f3e4bd'; g.fillRect(PAD + 10, yy, w + 20, h + 20); g.drawImage(im, PAD + 20, yy + 10, w, h); });
+    y += h + 30;
+  };
+  const rule = () => { const yy = y; ops.push(() => { g.fillStyle = '#c9a43b'; g.fillRect(PAD, yy, maxW, 3); }); y += 18; };
+
+  text('Royal Report', font(46, true, true), '#4e1010', 0, 4);
+  text(`${progress.name || 'Pupil'}  ·  ${r.date}  ·  Chapter ${ch.id}: ${ch.title} (${ch.years})`, font(24, true));
+  text(`Played as ${ch.advisor}. Quiz: first and only attempt.`, font(20), '#6a5a46');
+  rule();
+  text(`Quiz score: ${r.quiz} / ${r.quizMax}     Stars: ${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}`, font(28, true), '#4e1010');
+  text(`King's Favour ${r.favour}%   ·   Honesty ${r.honesty}%   ·   Source detective ${r.sources}/${r.sourcesMax}   ·   Letter ${r.letter}/${r.letterMax}   ·   Facts ${r.facts}   ·   Inventory ${r.inventory ?? foundCount()}/${TOTAL_TREASURES}`, font(20));
+  rule();
+  text('Quiz answers', font(30, true, true), '#4e1010');
+  (r.quizDetails || []).forEach((d, k) => {
+    const [, skill] = SKILLS[d.skill] || ['', 'Question'];
+    text(`${k + 1}. [${skill}] ${d.q}`, font(22, true), '#2a1a0a', 0, 2);
+    if (d.written) {
+      if (written[k]) image(written[k], 220); else text(d.written.text || '', font(22), '#20140a', 24);
+      text(`Self-check: ${d.ticks} of ${d.tickMax} points included  ${d.ok ? '✓' : '✗'}`, font(19), d.ok ? '#1f6a32' : '#a3221c', 24);
+    } else {
+      text(`Answer given: ${d.given || ''} ${d.part ? '(' + d.part + ')' : ''}  ${d.ok ? '✓ correct' : '✗ incorrect'}`, font(21), d.ok ? '#1f6a32' : '#a3221c', 24, 2);
+      if (!d.ok) text(`Correct answer: ${d.correct || ''}`, font(20), '#4a3a2a', 24);
+      else y += 6;
+    }
+  });
+  rule();
+  if (r.letterLines && r.letterLines.length) {
+    text('Letter', font(30, true, true), '#4e1010');
+    r.letterLines.forEach((l) => text(l, font(21, false, true), '#2a1a0a', 20, 2));
+    if (sig) image(sig, 120); else if (r.typedSignature) text(r.typedSignature, font(24, false, true), '#2a1a0a', 20);
+    rule();
+  }
+  text(`Think about it: ${ch.reflection}`, font(21, true));
+  if (pupilSig) { text('Signed:', font(20)); image(pupilSig, 100); }
+  text(`Sent from The King's Advisor on ${new Date().toLocaleString('en-GB')}`, font(17), '#8a7660');
+  y += PAD / 2;
+
+  c.width = W; c.height = Math.ceil(y);
+  g.fillStyle = '#fbf4e2'; g.fillRect(0, 0, W, c.height);
+  g.strokeStyle = '#c9a43b'; g.lineWidth = 10; g.strokeRect(5, 5, W - 10, c.height - 10);
+  ops.forEach((f) => f());
+  return new Promise((res) => c.toBlob(res, 'image/png'));
+}
+
+async function sendReport(ch, r, button, blobPromise) {
+  const old = button.textContent;
+  try {
+    const blob = await blobPromise;
+    const safe = (progress.name || 'Pupil').replace(/[^\w-]+/g, '_');
+    const file = new File([blob], `Royal-Report-Chapter-${ch.id}-${safe}.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: `Royal Report – Chapter ${ch.id}`, text: `${progress.name || 'Pupil'}'s Royal Report for Chapter ${ch.id}: ${ch.title}` });
+    } else {
+      // Computers without a share sheet: save the picture instead.
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = file.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    }
+    r.sentAt = new Date().toLocaleString('en-GB');
+    if (progress.completed[ch.id]) { progress.completed[ch.id].sentAt = r.sentAt; saveProgress(); }
+    toast('📤 Report ready to send to your teacher', 'good');
+  } catch (e) {
+    if (e && e.name !== 'AbortError') toast('Sorry, the report could not be shared. Try Print / Save as PDF.', 'bad');
+  }
+  button.textContent = old;
 }
 
 function printHTML(html) {
@@ -1094,9 +1244,15 @@ function printHTML(html) {
   window.print();
 }
 
-function showReport(ch, r) {
+function showReport(ch, r, note = '') {
   return new Promise((resolve) => {
-    const p = openPanel(reportHTML(ch, r) + `<div class="row"><button class="btn" id="print">🖨️ Print / Save as PDF</button><button class="btn primary" id="ok">Continue ▶</button></div>`, 'wide');
+    const p = openPanel(note + reportHTML(ch, r) + `<div class="row send-row">
+      <button class="btn" id="print">🖨️ Print / Save as PDF</button>
+      <button class="btn send" id="send">📤 Send to my teacher</button>
+      <button class="btn primary" id="ok">Continue ▶</button></div>
+      <p class="small muted">"Send to my teacher" opens your iPad's sharing options, so you can send your report through Google Classroom, Seesaw, Showbie, email or AirDrop, whichever your teacher uses.</p>`, 'wide');
+    const blobPromise = reportImage(ch, r); // prepared in advance so sharing opens straight away
+    p.querySelector('#send').onclick = (e) => sendReport(ch, r, e.currentTarget, blobPromise);
     p.querySelector('#print').onclick = () => printHTML(reportHTML(ch, r, true));
     p.querySelector('#ok').onclick = () => { closePanel(); resolve(); };
   });
@@ -1236,6 +1392,8 @@ function showSettings() {
       <details class="teacher"><summary>For teachers</summary>
         <p class="small">Enter the teacher code to unlock all chapters. (See the README.)</p>
         <div class="row"><input id="s-code" inputmode="numeric" placeholder="Code" maxlength="8"><button class="btn" id="s-unlock">Unlock all chapters</button></div>
+        <p class="small">Each chapter's quiz can only be taken once. To let a pupil retake a quiz, enter the teacher code above, then choose the chapter:</p>
+        <div class="row">${[1, 2, 3, 4].map((n) => `<button class="btn" data-retake="${n}">Retake Ch ${n}</button>`).join('')}</div>
         <p><button class="btn danger" id="s-reset">Delete all progress on this iPad</button></p>
       </details>
       <details class="teacher"><summary>Picture credits</summary>
@@ -1257,6 +1415,17 @@ function showSettings() {
     p.querySelector('#s-unlock').onclick = () => {
       if (p.querySelector('#s-code').value.trim() === TEACHER_CODE) { progress.unlocked = 4; saveProgress(); toast('🔓 All chapters unlocked', 'good'); } else toast('That code is not right', 'bad');
     };
+    p.querySelectorAll('[data-retake]').forEach((b) => {
+      b.onclick = () => {
+        if (p.querySelector('#s-code').value.trim() !== TEACHER_CODE) { toast('Enter the teacher code first', 'bad'); return; }
+        const n = +b.dataset.retake;
+        if (!progress.completed[n]) { toast(`Chapter ${n} has not been completed yet`, 'bad'); return; }
+        if (!confirm(`Allow this pupil to retake Chapter ${n}? Their old Chapter ${n} report will be removed from this iPad.`)) return;
+        delete progress.completed[n];
+        saveProgress();
+        toast(`🔓 Chapter ${n} can be played and the quiz taken again`, 'good');
+      };
+    });
     p.querySelector('#s-reset').onclick = () => {
       if (confirm('Delete ALL progress and reports on this device?')) {
         store.del(PKEY); store.del(SKEY);

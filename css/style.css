@@ -429,3 +429,24 @@ body.easy-read .parchment { font-family: Verdana, Arial, sans-serif; font-size: 
 .lb-text p { font-size: 1.05rem; line-height: 1.6; }
 @media (max-width: 860px) { .lightbox { grid-template-columns: 1fr; } }
 .hud-buttons .hbtn span { white-space: nowrap; }
+
+/* History slides with pictures */
+.panel.history-card { width: min(940px, 100%); }
+.hist { display: grid; grid-template-columns: minmax(200px, 42%) 1fr; gap: 18px; align-items: start; }
+.hist .tpic { margin: 0; }
+.hist .tpic img { max-height: 360px; }
+@media (max-width: 760px) { .hist { grid-template-columns: 1fr; } }
+/* Option letters */
+.choice .letter { display: inline-block; width: 26px; height: 26px; line-height: 26px; text-align: center; border-radius: 50%; background: var(--parch-dark); color: var(--red-dark); margin-right: 8px; font-size: 0.85rem; }
+.gap .gnum { font-size: 0.65rem; color: #8a6a3a; vertical-align: super; margin-right: 3px; }
+.gap-sentence { line-height: 2.6; }
+/* Report answers */
+.answers { padding-left: 22px; }
+.answers li { margin-bottom: 10px; padding: 6px 8px; border-radius: 8px; }
+.answers li.ok { background: #eef8f0; }
+.answers li.no { background: #fcefed; }
+.answers .aq { font-weight: 700; }
+.answers .ag, .answers .ac { font-size: 0.92rem; }
+.btn.send { background: #24407a; color: #fff; border-color: #16295a; font-weight: 700; text-align: center; box-shadow: 0 3px 0 #16295a; }
+.locked-note { background: #fff3cc; border: 2px solid var(--gold); border-radius: 10px; padding: 10px; font-weight: 600; }
+.written.locked { opacity: 0.85; }

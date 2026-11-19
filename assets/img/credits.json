@@ -271,5 +271,47 @@
   "license": "Public domain",
   "artist": "Hans Holbein the Younger, 1536–37 (National Portrait Gallery)",
   "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Henry_VIII_and_Henry_VII_-_WGA11606.jpg"
+ },
+ "clement": {
+  "file": "clement.jpg",
+  "title": "Sebastiano del Piombo - Pope Clement VII - WGA21100.jpg",
+  "license": "Public domain",
+  "artist": "Sebastiano del Piombo, c. 1526",
+  "source": "https://commons.wikimedia.org/wiki/File:Sebastiano_del_Piombo_-_Pope_Clement_VII_-_WGA21100.jpg"
+ },
+ "morefamily": {
+  "file": "morefamily.jpg",
+  "title": "Hans Holbein d. J. - Study for the Family Portrait of Sir Thomas More - WGA11595.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1527 (Kunstmuseum Basel)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Study_for_the_Family_Portrait_of_Sir_Thomas_More_-_WGA11595.jpg"
+ },
+ "tower": {
+  "file": "tower.jpg",
+  "title": "Tower of London viewed from the River Thames.jpg",
+  "license": "CC BY-SA 3.0",
+  "artist": "Bob Collowan",
+  "source": "https://commons.wikimedia.org/wiki/File:Tower_of_London_viewed_from_the_River_Thames.jpg"
+ },
+ "hever": {
+  "file": "hever.jpg",
+  "title": "Hever Castle across Church Field 2.jpg",
+  "license": "CC0",
+  "artist": "DimiTalen",
+  "source": "https://commons.wikimedia.org/wiki/File:Hever_Castle_across_Church_Field_2.jpg"
+ },
+ "hauntedgallery": {
+  "file": "hauntedgallery.jpg",
+  "title": "Hampton Court - The Haunted Gallery.png",
+  "license": "Public domain",
+  "artist": "Illustration from W. H. Hutton, Hampton Court (1897)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hampton_Court_-_The_Haunted_Gallery.png"
+ },
+ "parrbook": {
+  "file": "parrbook.jpg",
+  "title": "1550 Parr Prayers or Meditations.jpg",
+  "license": "CC BY-SA 4.0",
+  "artist": "Photograph of a 1550 edition of Catherine Parr's Prayers or Meditations",
+  "source": "https://commons.wikimedia.org/wiki/File:1550_Parr_Prayers_or_Meditations.jpg"
  }
 }
