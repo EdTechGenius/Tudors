@@ -1,29 +1,40 @@
-// Chapter 2 — Sir Thomas More, 1529–1532: "Conscience or the Crown"
+// Chapter 2 — Sir Thomas More, 1532–1535: "The Oath"
+// This chapter plays differently: instead of writing a letter, the player makes hard choices on the
+// Conscience Scale, cracks an ambassador's code, and survives Cromwell's questions in the Tower.
 import { henryLook } from './chapter1.js';
 
 const talked = (s, id) => !!s.flags['talked_' + id];
 
+export const norfolkLook = { robe: '#2b2b4a', gown: '#5a3a1a', trim: '#d9ab3c', legs: '#222', hat: 'bonnet', hatColor: '#111', chain: true, width: 1.1, bg: '#2a2a4a', photo: 'norfolk' };
+export const kitLook = { robe: '#8a7a5a', legs: '#5a4a3a', hat: 'cap', hatColor: '#5a4a3a', hair: '#8a5a2a', apron: true, scale: 0.72, bg: '#5a4a2a' };
+const richLook = { robe: '#2a2a2a', gown: '#3a2a3a', long: true, hat: 'cap', hatColor: '#111', trim: '#6a5a4a', beard: '#5a3a1a', bg: '#3a2a3a' };
+
 export default {
   id: 2,
+  v: 2,
   advisor: 'Sir Thomas More',
   short: 'More',
-  title: 'Conscience or the Crown',
-  years: '1529–1532',
+  title: 'The Oath',
+  years: '1532–1535',
   you: { robe: '#2a2a2a', gown: '#3a2a20', long: true, hat: 'cap', hatColor: '#111', trim: '#6a4a2a', chain: true, beard: null, width: 1.1, bg: '#2a3a2a', photo: 'more' },
   era: { greatHall: 'building', clock: false, haInitials: false },
   start: { x: 41, z: 0, yaw: -Math.PI / 2 },
   meters: { favour: 60, honesty: 55 },
+  kingMood: true,
+  honestyName: 'Conscience',
+  honestyIcon: '✝️',
+  kit: 'kit2',
 
   intro: [
-    { title: 'Wolsey has fallen…', text: 'It is 1532. Cardinal Wolsey failed to win the King\'s annulment and lost everything he owned. In his place, Henry chose <b>you</b>: <b>Sir Thomas More</b>, a brilliant lawyer, scholar and writer.<br><br>You are famous across Europe for your book <b>Utopia</b>, and scholars from many countries write to you. You are also a deeply religious Catholic, who prays every day and believes that the Pope is the rightful head of the Church.' },
+    { title: 'Wolsey has fallen…', text: 'It is 1532. Cardinal Wolsey failed to win the King\'s annulment and lost everything he owned. In his place, Henry chose <b>you</b>: <b>Sir Thomas More</b>, a brilliant lawyer, scholar and writer.<br><br>You are famous across Europe for your book <b>Utopia</b>. You are also a deeply religious Catholic, who prays every day and believes that the Pope is the rightful head of the Church.' },
     { title: 'The King\'s friend', text: 'Henry admires you and enjoys your company. He has visited your house in Chelsea and strolled around your garden with his arm around your neck, which is a great honour.<br><br>Yet you are not fooled. You have quietly told your family: <i>"If my head could win him a castle in France, it would not fail to go."</i> You understand how dangerous it can be to be close to a king.' },
-    { title: 'A dangerous idea', text: 'The Pope <b>still</b> refuses to annul Henry\'s marriage. So Henry has a bold new plan: if the Pope will not help, perhaps <b>the King himself</b> should become head of the Church in England!<br><br>As a loyal Catholic, you believe this is deeply wrong. Can you go on serving the King <b>and</b> keep your conscience clear?' },
+    { title: 'Conscience or the Crown?', text: 'The Pope <b>still</b> refuses to annul Henry\'s marriage. So Henry has a bold new plan: <b>the King himself</b> will become head of the Church in England!<br><br>This chapter is different. Watch the <b>King\'s face</b> in the corner of the screen to see his mood. You will crack a <b>secret code</b>, make the hardest choices of your life on the <b>Conscience Scale</b>, and face <b>questions in the Tower of London</b>. Choose your words very carefully…' },
   ],
 
   npcs: [
     {
       id: 'henry', name: 'King Henry VIII', role: 'King of England, aged 40', look: henryLook(1.2), pos: [47.2, 0], yaw: -Math.PI / 2,
-      dialogue: (s) => (!talked(s, 'henry') ? 'intro' : s.letter ? 'audience' : 'waiting'),
+      dialogue: (s) => (!talked(s, 'henry') ? 'intro' : 'waiting'),
       dialogues: {
         intro: { start: 'a', nodes: {
           a: { text: 'Thomas, my good friend! Come in and sit with me. You know perfectly well what troubles me. For five long years I have waited patiently for the Pope to see sense, and in all that time he has done absolutely NOTHING.', next: 'b' },
@@ -34,22 +45,11 @@ export default {
             { t: '"Majesty, I do not believe that any king can be head of the Church."', fx: { favour: -12, honesty: 10 }, next: 'd3' },
           ] },
           d1: { text: 'Hmm. Very well, pray if you must. But do not take too long about it, Thomas. My patience is not endless.', next: 'e' },
-          d2: { text: 'Ha! I knew that I could count on you. And yet… you look troubled. Go and speak to people at court, and then write to me with your true answer.', next: 'e' },
+          d2: { text: 'Ha! I knew that I could count on you. And yet… you look troubled. I can always tell when a man says one thing and thinks another.', next: 'e' },
           d3: { text: '(The room falls silent. Even the guards stop moving.) …I shall pretend that I did not hear that, Thomas. Go away and think VERY carefully before you speak to me again.', next: 'e' },
-          e: { text: 'Speak to the people of my court and read whatever you need to read. Then send me a letter giving me your true answer. I shall be waiting for it.', set: 'missionGiven' },
+          e: { text: 'Speak to the people of my court, and read whatever you need to read. Then go to your desk and decide where you stand. Watch my face, Thomas: I always know who is truly with me.', set: 'missionGiven' },
         } },
-        waiting: { start: 'a', nodes: { a: { text: 'Still thinking, Thomas? Find out what others believe, read what you need to read, and then write your answer at your desk. Do not keep me waiting too long.' } } },
-        audience: { start: 'a', nodes: {
-          a: { text: 'I have read your letter, Thomas. Every single word of it.', next: (s) => (s.flags.chose_resign ? 'r1' : 's1') },
-          r1: { who: 'you', text: 'Majesty, I cannot agree with you, and so I cannot remain as your Lord Chancellor. Here is the Great Seal of England. With deep respect, I give it back to you.', next: 'r2' },
-          r2: { text: '(Henry takes the heavy silver seal and turns it over in his hands for a long time without speaking.) You were my friend, Thomas. I hope, for your sake, that you understand what you are doing.', choices: [
-            { t: '"I will always pray for Your Majesty."', fx: { honesty: 4 }, next: 'end' },
-            { t: '"I am sorry, Majesty. I must follow my conscience."', fx: { honesty: 6, favour: -4 }, next: 'end' },
-          ] },
-          s1: { text: 'You will support me! Good, good. With the Church of England behind me, nothing in the world can stop me now. Anne shall be my queen!', next: 's2' },
-          s2: { who: 'narrator', text: 'In this game, you chose to support the King. But the real Thomas More could not bring himself to do it. His conscience would not let him…', next: 'end' },
-          end: { who: 'narrator', text: 'Let us discover what really happened to Sir Thomas More…', end: 'chapter' },
-        } },
+        waiting: { start: 'a', nodes: { a: { text: 'Still thinking, Thomas? Find out what others believe, then go to your desk and make up your mind. Do not keep me waiting too long.' } } },
       },
     },
     {
@@ -64,9 +64,31 @@ export default {
             { t: '"The Church is not a business, Master Cromwell."', fx: { honesty: 4 }, next: 'd' },
             { t: '"I must admit that it is clever."', fx: { favour: 2 }, next: 'd' },
           ] },
-          d: { text: 'A friendly word of advice, Sir Thomas. The King generously rewards those who help him, and he never forgets those who do not. By the way, have you seen the scaffolding in the Great Hall? He is rebuilding it from top to bottom. Our King thinks big in everything he does.' },
+          d: { text: 'A friendly word of advice, Sir Thomas. Soon, everyone important will be asked to swear an oath to the King. Those who swear will be safe. Those who refuse… well. I would hate to be the man who asks you the questions.' },
         } },
         again: { start: 'a', nodes: { a: { text: 'Choose wisely, Sir Thomas. The King is watching all of us very closely.' } } },
+      },
+    },
+    {
+      id: 'norfolk', name: 'Thomas Howard, Duke of Norfolk', role: 'England\'s most powerful lord', look: norfolkLook,
+      pos: [-42, 8], yaw: Math.PI, when: (s) => talked(s, 'henry'),
+      dialogue: (s) => (talked(s, 'norfolk') ? 'again' : 'main'),
+      dialogues: {
+        main: { start: 'a', nodes: {
+          a: { text: 'Ah, Sir Thomas. You look like a man carrying the weight of the world on his shoulders. My niece, Lady Anne Boleyn, will soon be queen, you know. Wise men are making friends with her now, while they still can.', fact: 'The Duke of Norfolk was Anne Boleyn\'s uncle. He was one of the richest and most powerful lords in England.', next: 'b' },
+          b: { text: 'But I know your heart, Sir Thomas. Poor Queen Catherine is so lonely. A kind letter from you would comfort her greatly. Write it in secret, and give it to me. I shall make sure that it reaches her safely.', choices: [
+            { t: '"That is very kind, my lord. I will write to her tonight."', rival: false, fx: { favour: -4 }, next: 'c1' },
+            { t: '"I write no secret letters, my lord. Everything I do, the King may see."', rival: true, fx: { favour: 4 }, next: 'c2' },
+          ] },
+          c1: { text: '(He smiles a thin smile.) Excellent. I shall take VERY good care of it.', next: 'c1b' },
+          c1b: { who: 'narrator', text: 'Later that night, you realise your mistake. A secret letter to Catherine would be PROOF that you were on her side against the King. Norfolk could have carried it straight to Henry! You decide not to write it. That was a narrow escape.', next: 'd' },
+          c2: { text: '(His smile vanishes.) Hmph. You are cleverer than you look, More. Much cleverer.', next: 'd' },
+          d: { text: 'Then let me give you some advice instead, for free. "Indignatio principis mors est." It is Latin, as you know: the anger of the King means death.', choices: [
+            { t: '"Is that all, my lord? Then the only difference between us is that I shall die today, and you tomorrow."', fx: { honesty: 4 }, fact: 'The Duke of Norfolk really did warn More that "the anger of the King means death". More really did give this witty reply.' },
+            { t: '"Thank you, my lord. I shall be careful."', fx: { favour: 2 } },
+          ] },
+        } },
+        again: { start: 'a', nodes: { a: { text: 'Remember, Sir Thomas: the anger of the King means death.' } } },
       },
     },
     {
@@ -104,6 +126,23 @@ export default {
           ] },
         } },
         again: { start: 'a', nodes: { a: { text: 'God keep you safe, Sir Thomas. Follow your conscience, wherever it may lead.' } } },
+      },
+    },
+    {
+      id: 'kit', name: 'Kit', role: 'A kitchen boy, aged 10', look: kitLook,
+      pos: [-3, -42], yaw: -Math.PI / 2, optional: true,
+      dialogue: (s) => (talked(s, 'kit') ? 'again' : 'main'),
+      dialogues: {
+        main: { start: 'a', nodes: {
+          a: { text: '(A small boy is scrabbling about on the floor. A whole basket of bread rolls has spilled across the stones.) Oh no, oh no… Master Cook will beat me black and blue! These manchet loaves are for the King\'s own table!', fact: 'Manchet was the finest white bread, eaten by the rich. Poor people ate darker bread made from rye or barley.', choices: [
+            { t: '"Here, let me help you pick them up before anyone sees."', legacy: { kit2: true }, fx: { honesty: 3 }, next: 'b1' },
+            { t: '"Out of my way, boy. I have important business with the King."', legacy: { kit2: false }, next: 'b2' },
+          ] },
+          b1: { text: 'You… you\'re the Lord Chancellor! And you helped ME? Thank you, my lord! My name is Kit. I shall never forget this, never!', next: 'c' },
+          b2: { text: '(Kit stares at the floor as you walk past.) Yes, my lord. Sorry, my lord.', next: 'c' },
+          c: { who: 'narrator', text: 'Kit is not a real historical person, but hundreds of boys like him worked in the Tudor kitchens. Remember him: you may meet him again in later chapters!' },
+        } },
+        again: { start: 'a', nodes: { a: { text: (s) => (s.legacy.kit2 ? 'Thank you again, my lord! Not one loaf was lost.' : 'I am busy, my lord.') } } },
       },
     },
     {
@@ -175,47 +214,122 @@ export default {
   ],
 
   spots: [
-    { id: 'desk', label: 'Write your answer to the King', anchor: 'desk', action: 'letter', objective: 'letter' },
+    { id: 'code', label: 'Crack the ambassador\'s secret letter', pos: [33, -9], action: 'run', run: 'cipher', objective: 'cipher' },
+    { id: 'desk', label: 'Face the hardest choices of your life', anchor: 'desk', action: 'run', run: ['conscience', 'toTower', 'interrogation', 'meg'], objective: 'choices', finish: true },
   ],
 
   objectives: [
     { id: 'meet', text: 'Speak to King Henry in his Privy Chamber', done: (s) => talked(s, 'henry'), targets: ['npc:henry'] },
+    { id: 'people', text: 'Speak to Cromwell, Bishop Fisher, the Duke of Norfolk and your daughter Margaret', done: (s) => ['cromwell', 'fisher', 'norfolk', 'margaret'].every((k) => talked(s, k)), after: ['meet'], targets: ['npc:cromwell', 'npc:fisher', 'npc:norfolk', 'npc:margaret'], count: (s) => ['cromwell', 'fisher', 'norfolk', 'margaret'].filter((k) => talked(s, k)).length + '/4' },
     { id: 'sources', text: 'Read 3 important sources', done: (s) => ['utopia', 'tyndale', 'universities'].every((k) => s.sources[k]), after: ['meet'], targets: ['source:utopia', 'source:tyndale', 'source:universities'], count: (s) => ['utopia', 'tyndale', 'universities'].filter((k) => s.sources[k]).length + '/3' },
-    { id: 'people', text: 'Speak to Cromwell, Bishop Fisher and your daughter Margaret', done: (s) => ['cromwell', 'fisher', 'margaret'].every((k) => talked(s, k)), after: ['meet'], targets: ['npc:cromwell', 'npc:fisher', 'npc:margaret'], count: (s) => ['cromwell', 'fisher', 'margaret'].filter((k) => talked(s, k)).length + '/3' },
-    { id: 'bonus', text: 'Bonus: Find Anne Boleyn and the Master Cook', done: (s) => talked(s, 'anne') && talked(s, 'cook'), after: ['meet'], targets: ['npc:anne', 'npc:cook'], optional: true },
-    { id: 'letter', text: 'Write your answer to the King at your desk', done: (s) => !!s.letter, after: ['sources', 'people'], targets: ['spot:desk'] },
-    { id: 'audience', text: 'Take your answer to the King', done: (s) => !!s.flags.chapterDone, after: ['letter'], targets: ['npc:henry'] },
+    { id: 'cipher', text: 'Crack the secret code in the Presence Chamber', done: (s) => !!s.tasks.cipher, after: ['meet'], targets: ['spot:code'] },
+    { id: 'bonus', text: 'Bonus: Find Anne Boleyn, the Master Cook and a kitchen boy', done: (s) => talked(s, 'anne') && talked(s, 'cook') && talked(s, 'kit'), after: ['meet'], targets: ['npc:anne', 'npc:cook', 'npc:kit'], optional: true },
+    { id: 'choices', text: 'Go to your desk and face the hardest choices of your life', done: (s) => !!s.tasks.meg, after: ['people', 'sources', 'cipher'], targets: ['spot:desk'] },
   ],
 
-  letter: {
-    to: 'King Henry VIII', title: 'Your Answer to the King',
-    intro: 'This is the hardest letter of your life. There is no single right answer about what you believe, but you must be polite, clear and honest. The King is a dangerous man to upset! When you have finished, sign it with your quill.',
-    parts: [
-      { label: 'Greeting', options: [
-        { t: 'Most gracious Sovereign Lord,', score: 2, why: 'Respectful and correct.' },
-        { t: 'Hello Henry,', score: 0, why: 'Far too casual for a king, even a friend!' },
+  activities: {
+    cipher: {
+      type: 'cipher', label: 'The ambassador\'s code', icon: '🔐',
+      title: 'A secret letter', heading: 'The ambassador\'s code',
+      intro: 'On a table lies a letter from <b>Eustace Chapuys</b>, the ambassador of Emperor Charles V. It is written in a secret code! Ambassadors sent home news about everything they saw at court. Can you crack it?',
+      message: 'HENRY WILL MAKE HIMSELF HEAD OF THE CHURCH',
+      shift: 5,
+      clue: 'Chapuys\'s secret key is written in the corner of the letter: <b>"A = F"</b>. Turn the red inner wheel until the letter <b>F</b> sits just under the <b>A</b> at the top.',
+      hint1: 'Find the first letter of the code on the <b>red inner wheel</b>. Which letter is just outside it?',
+      meaning: 'Chapuys wrote hundreds of letters about Henry\'s court, many of them in code. Historians still use them today. But be careful: Chapuys was a loyal friend of Catherine of Aragon, and he strongly disliked Anne Boleyn, so his letters are <b>biased</b>.',
+      question: { q: 'Why did ambassadors like Chapuys write their letters in code?', options: [
+        { t: 'Their letters could be stolen and read by the King\'s spies.', ok: true, why: 'Yes! Letters travelled a long way by messenger, and spies were everywhere.' },
+        { t: 'Spanish words could not be written with English letters.', ok: false, why: 'No: Spanish uses the same alphabet as English.' },
+        { t: 'Codes made the letters shorter and cheaper to send.', ok: false, why: 'No: a coded letter is just as long as the ordinary one.' },
+        { t: 'It was the law that every royal letter had to be in code.', ok: false, why: 'No: there was no such law. Codes were used to keep secrets.' },
       ] },
-      { label: 'What you believe', options: [
-        { t: 'My conscience will not let me agree that any king can be Head of the Church. The Church belongs to all Christian people.', score: 2, set: 'chose_resign', fx: { honesty: 8, favour: -8 }, why: 'Honest and brave. This is what the real Thomas More believed.' },
-        { t: 'I will support Your Majesty as Supreme Head of the Church, as Parliament decides.', score: 2, set: 'chose_support', fx: { favour: 8, honesty: -6 }, why: 'Clear and loyal. Many people at court made this choice to stay safe.' },
-        { t: 'You are wrong, and everybody knows it!', score: 0, fx: { favour: -15 }, why: 'Never insult a Tudor king!' },
-      ] },
-      { label: 'Your reason', options: [
-        { t: 'As I wrote in Utopia, a good ruler must always listen to wise and honest advice.', score: 2, needs: 'utopia', why: 'Clever: you used your own famous book.' },
-        { t: 'The universities agreed with you only because some of them were paid.', score: 1, needs: 'universities', fx: { honesty: 4, favour: -4 }, why: 'True, but risky! The King will not like being told this.' },
-        { t: 'Lady Anne\'s books are full of dangerous ideas.', score: 0, needs: 'tyndale', fx: { favour: -8 }, why: 'Attacking the woman the King loves? Very dangerous!' },
-      ] },
-      { label: 'Your request', options: [
-        { t: 'I humbly ask to give back the Great Seal and to live quietly, praying for Your Majesty.', score: 2, set: 'chose_resign', why: 'This is exactly what More did in May 1532.' },
-        { t: 'I humbly ask to go on serving you faithfully as Lord Chancellor.', score: 2, why: 'Polite and loyal.' },
-        { t: 'Forget Lady Anne and go back to the Queen!', score: 0, fx: { favour: -10 }, why: 'Ordering the King about? Disaster!' },
-      ] },
-      { label: 'Signing off', options: [
-        { t: 'Your Majesty\'s faithful servant and daily beadsman, Thomas More.', score: 2, why: 'A "beadsman" is someone who prays for another person. More really did sign his letters to Henry like this.' },
-        { t: 'Thomas More, Knight.', score: 1, why: 'Correct, but a bit cold for a letter to a friend and king.' },
-      ] },
-    ],
-    sent: 'You seal the letter with wax and hand it to a royal messenger. Your hands are shaking a little.',
+    },
+    conscience: {
+      type: 'conscience', label: 'The Conscience Scale', icon: '⚖️',
+      title: 'The Conscience Scale',
+      dilemmas: [
+        { year: 'May 1532', title: 'The Great Seal', img: 'more',
+          text: 'The bishops have agreed that the Church in England will obey the King instead of the Pope. As Lord Chancellor, you keep the <b>Great Seal of England</b>, which is pressed into wax to make the King\'s laws official. Can you go on stamping laws that you believe are wrong?',
+          choices: [
+            { t: 'Give the Great Seal back to the King, and resign.', loyalty: -6, conscience: 10, result: 'You hand over the heavy silver seal. You lose your job and most of your money, but your conscience is clear.' },
+            { t: 'Keep the Seal and say nothing. Perhaps things will get better.', loyalty: 8, conscience: -8, result: 'The King is pleased with you. But every time you stamp a new law, you feel a little sick inside.' },
+            { t: 'Keep the Seal, but argue against the King in his Council.', loyalty: -10, conscience: 4, result: 'The King is furious that his own Lord Chancellor is arguing with him in front of everyone!' },
+          ],
+          real: 'On 16 May 1532, More gave the Great Seal back to the King in a garden at Whitehall. He said he was resigning because of poor health, which was a polite way of not criticising Henry.' },
+        { year: 'June 1533', title: 'The coronation', img: 'boleyn',
+          text: 'Henry has secretly married Anne Boleyn, and she will be crowned queen on 1 June. Three bishops send you a gift of <b>£20</b>, a large sum of money, to buy a fine new gown so that you can come to the coronation.',
+          choices: [
+            { t: 'Buy the gown and go to the coronation, smiling.', loyalty: 8, conscience: -8, result: 'You cheer as Anne is crowned. Henry notices you and nods. But in your heart, you still believe that Catherine is his true wife.' },
+            { t: 'Send the money back and stay at home.', loyalty: -6, conscience: 6, result: 'Everyone notices your empty seat. The King notices it most of all.' },
+            { t: 'Keep the bishops\' money, buy the gown… and still stay at home.', loyalty: -4, conscience: 4, result: 'A cheeky choice! You do not insult the bishops by refusing their gift, but you do not celebrate the marriage either.' },
+          ],
+          real: 'More kept the money but did not go. He joked to the bishops that if they could persuade him to attend the coronation, they would soon persuade him to do far worse things.' },
+        { year: 'April 1534', title: 'Meg\'s letter', img: 'morefamily',
+          text: 'Parliament has passed a new law, and everyone important must swear an <b>oath</b> accepting it. Your daughter Meg has already sworn it. She writes to you, begging you to swear too, so that you can come home to your family.',
+          choices: [
+            { t: 'Write back lovingly, but explain that you cannot swear.', loyalty: -2, conscience: 8, result: 'Your hand shakes as you write. It is the hardest letter of your life.' },
+            { t: 'Tell Meg you will swear, so that you can come home.', loyalty: 8, conscience: -8, result: 'Meg is overjoyed. But you lie awake that night, wondering whether you can really do it.' },
+            { t: 'Do not reply. It is too painful to think about.', loyalty: 0, conscience: -2, result: 'Meg waits and waits for an answer that never comes. Avoiding a problem does not make it go away.' },
+          ],
+          real: 'More wrote Meg loving letters, but he would not swear. He also said that he would never judge other people, like Meg, who had sworn.' },
+        { year: '13 April 1534', title: 'The Oath at Lambeth', img: 'cromwell',
+          text: 'You are called to Lambeth Palace. Cromwell and Archbishop Cranmer order you to swear the <b>Oath of Succession</b>. It says that Anne Boleyn\'s children will rule after Henry, and it rejects the power of the Pope.',
+          choices: [
+            { t: 'Swear the whole oath. Your family needs you alive.', loyalty: 12, conscience: -12, result: 'You are free to go home. The King is delighted. But was it worth it?' },
+            { t: 'Refuse completely, and tell them exactly why it is wrong.', loyalty: -12, conscience: 6, result: 'Dangerous! Saying WHY you refuse could be called treason. You are arrested at once.' },
+            { t: 'Agree that Anne\'s children can be heirs, but refuse the rest, without saying why.', loyalty: -6, conscience: 8, result: 'A very careful answer. You do not give them any words that they can use against you… but you are still arrested.' },
+          ],
+          real: 'More agreed that Parliament could choose the next king or queen, but he would not swear to the parts about the Church, and he would not explain why. Four days later, he was sent to the Tower of London.' },
+      ],
+      ending: 'In real life, almost every bishop and lord in England swore the oath to stay safe. Only a few people, such as More and Bishop Fisher, refused. Was More brave, or was he stubborn? Historians still argue about it today.',
+    },
+    toTower: {
+      type: 'cards', title: '1534–1535',
+      cards: [
+        { img: 'tower', year: '1534', icon: '🏰', title: 'The Tower of London', text: 'On 17 April 1534, Thomas More was locked in the <b>Tower of London</b>. He stayed there for fifteen months. At first he was allowed books, pens, ink and visits from Meg. He spent his days praying and writing.' },
+        { img: 'whitehall', year: '1534', icon: '📜', title: 'A new law', text: 'In November 1534, Parliament passed the <b>Act of Supremacy</b>, making Henry the Supreme Head of the Church of England. A new <b>Treasons Act</b> said that anyone who even SAID that the King was not Head of the Church could be executed.<br><br>But More had a plan: if he said nothing at all, how could they prove what he believed?' },
+      ],
+    },
+    interrogation: {
+      type: 'interrogation', label: 'Questions in the Tower', icon: '🗝️',
+      title: 'The Tower of London, 1535', heading: 'Cromwell\'s questions', img: 'tower',
+      intro: 'It is 1535. Thomas Cromwell has come to your cell to question you. If you say the King is NOT Head of the Church, it is treason, and you will be executed. But surely nobody can be punished just for staying silent… can they?',
+      questions: [
+        { who: 'Thomas Cromwell', photo: 'cromwell', q: 'Sir Thomas, Parliament has made the King Supreme Head of the Church. Do you accept this law?', options: [
+          { kind: 'careful', t: '"I am the King\'s true and faithful subject, and I pray for him every day. More than that, I will not say."', why: 'You praised the King without answering the question. Cromwell frowns: he has nothing to write down.' },
+          { kind: 'no', t: '"No. Parliament has no power to make any king the head of the Church."', why: 'Cromwell\'s clerk writes down every word. Those words alone could send you to the executioner.' },
+          { kind: 'yes', t: '"Yes. I accept the law completely."', why: 'You are safe… but you have said something you do not believe.' },
+        ] },
+        { who: 'Thomas Cromwell', photo: 'cromwell', q: 'Then why will you not swear the oath? Tell me your reasons.', options: [
+          { kind: 'careful', t: '"If I told you my reasons, I might anger the King. So I shall keep them to myself."', why: 'This is very close to what the real More said. He refused to give his reasons, so nobody could call them treason.' },
+          { kind: 'no', t: '"Because the oath is wicked, and so is the King\'s new marriage!"', why: 'That is exactly what Cromwell hoped you would say!' },
+          { kind: 'yes', t: '"I have no reasons. Give me the oath and I will swear it."', why: 'You could go home… but you have gone against your conscience.' },
+        ] },
+        { who: 'Thomas Cromwell', photo: 'cromwell', q: 'Your silence shows that you think the law is wrong. Silence is a kind of answer, is it not?', options: [
+          { kind: 'careful', t: '"There is an old saying in law: silence means agreement. If anything, my silence AGREES with you!"', why: 'Brilliant! More really used this old legal saying in his defence. You turned Cromwell\'s trick upside down.' },
+          { kind: 'no', t: '"Very well. Yes, my silence means that I believe the law is wrong."', why: 'TRAP! Now you have told him exactly what you believe.' },
+          { kind: 'yes', t: '"Then I will break my silence: the King IS Head of the Church."', why: 'You gave in. Cromwell smiles: another important man has bent to the King\'s will.' },
+        ] },
+        { who: 'Thomas Cromwell', photo: 'cromwell', q: 'Bishop Fisher has refused the oath too. Did you plan this together? Did you write secret letters to each other?', options: [
+          { kind: 'careful', t: '"We sent each other a few notes about our health and our prayers. Nothing more."', why: 'A careful answer. More and Fisher did send each other notes in the Tower, but they were burnt, so nobody could prove what they said.' },
+          { kind: 'no', t: '"Yes. We agreed that the King\'s new law goes against God."', why: 'TRAP! Now you have put Bishop Fisher in danger too.' },
+          { kind: 'yes', t: '"Bishop Fisher is a foolish old man. I want nothing to do with him."', why: 'You betrayed a brave friend to save yourself.' },
+        ] },
+        { who: 'Sir Richard Rich', look: richLook, q: '(Richard Rich comes to take away your books.) Just between friends, Sir Thomas… If Parliament made ME king, would you accept me? And if Parliament made the King Head of the Church, would you accept that too?', options: [
+          { kind: 'careful', t: '"That is a clever question, Master Rich. But I will not play games with my life."', why: 'Wise! You refused to be drawn into a trick conversation.' },
+          { kind: 'no', t: '"Parliament can make you king, but it can NEVER make the King Head of the Church!"', why: 'TRAP! Rich hurries straight to Cromwell with your words.' },
+          { kind: 'yes', t: '"If Parliament says so, then I suppose it must be true."', why: 'You have said something you do not believe.' },
+        ] },
+      ],
+      after: 'On 1 July 1535, Thomas More was put on trial. Richard Rich told the court that, in the Tower, More had said Parliament could NOT make the King Head of the Church. More said that Rich was lying, and <b>most historians believe More</b>. But it did not matter: the jury found him guilty in just fifteen minutes.',
+    },
+    meg: {
+      type: 'freewrite', label: 'A last letter to Meg', icon: '✒️',
+      kicker: 'The last letter', title: 'A letter to Meg', img: 'morefamily', height: 300,
+      text: 'Your pens and ink have been taken away. On 5 July 1535, the day before you are to die, you write a last letter to your daughter Meg using <b>a piece of charcoal</b>. The real More wrote to her: <i>"I never liked your manner towards me better than when you kissed me last."</i><br><br>What would you want to tell Meg? Use your Apple Pencil.',
+      starters: ['My dearest Meg, …', 'Please do not be sad, because …', 'I chose to … because …', 'Always remember …'],
+      placeholder: 'My dearest Meg…',
+    },
   },
 
   history: [
@@ -242,7 +356,7 @@ export default {
     ], why: 'These words explain More\'s difficult choice.' },
     { type: 'mc', skill: 'vocab', q: 'More was "a devout Catholic". What does "devout" mean?', options: ['Unwilling to change his mind', 'Deeply and sincerely religious', 'Famous in many different countries', 'Very rich, powerful and important'], answer: 1, why: 'More\'s faith was the most important thing in his life.' },
     { type: 'mc', skill: 'infer', q: 'More said, "If my head could win him a castle in France, it would not fail to go." What does this suggest about how More saw the King?', options: ['He hoped the King would give him a castle in France', 'He thought England should invade France to win land', 'He knew the King would sacrifice even a friend to win', 'He believed the King would always reward his loyalty'], answer: 2, why: 'More realised that the King\'s friendship could not be trusted when Henry wanted something.' },
-    { type: 'mc', skill: 'infer', q: 'Cromwell says the King "never forgets those who do not" help him. Why is this a warning?', options: ['Refusing to help the King could put More in danger', 'The King would soon forget all about More\'s family', 'More should ask Parliament to protect him instead', 'The King was planning to make More his chief minister'], answer: 0, why: 'Cromwell is hinting that More could be punished if he refuses to help.' },
+    { type: 'mc', skill: 'infer', q: 'Norfolk warned More, "The anger of the King means death." More replied, "Then I shall die today, and you tomorrow." What did More mean?', options: ['He thought Norfolk was planning to murder him that night', 'Anyone, even Norfolk, could lose the King\'s favour one day', 'He was sure the King would forgive him the next morning', 'He believed Norfolk was much older and sicker than he was'], answer: 1, why: 'More meant that nobody was safe from Henry\'s anger. He was right: in 1546, Norfolk himself was arrested!' },
     { type: 'mc', skill: 'infer', q: 'Why do you think More refused to go to Anne Boleyn\'s coronation in 1533?', options: ['He was too ill to travel from his house in Chelsea', 'Anne had banned Wolsey\'s old friends from the court', 'He thought the celebrations cost the country too much', 'Going would suggest he accepted Henry\'s new marriage'], answer: 3, why: 'More believed Henry was still married to Catherine in God\'s eyes, so he would not celebrate the new queen.' },
     { type: 'order', skill: 'sequence', q: 'Put these events in the order they happened.', items: ['More resigns as Lord Chancellor (May 1532)', 'Henry secretly marries Anne Boleyn (January 1533)', 'Princess Elizabeth is born (September 1533)', 'The Act of Supremacy is passed (1534)', 'More is executed (1535)'], why: 'Each event led to the next: More\'s refusal grew more dangerous over time.' },
     { type: 'write', skill: 'explain', q: 'Explain why Thomas More would not accept Henry as Head of the Church.', model: 'More was a devout Catholic who believed that the Pope was the rightful head of the Church, which belongs to Christians everywhere, not just to one country. His conscience would not let him agree, even though refusing was dangerous.', checklist: ['I mentioned More\'s Catholic beliefs or the Pope', 'I mentioned his conscience', 'I used "because" or "so" to explain'] },

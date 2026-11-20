@@ -13,6 +13,7 @@ import { OBJECTS, PAINTINGS, ICONS, PAINTING_INFO, galleryFor, forChapter } from
 import { Music } from './music.js';
 import { GLOSSARY, GLOSS_INDEX } from './content/glossary.js';
 import { createQuillPad } from './quill.js';
+import { ACTIVITIES, moodOf, moodFaceHTML } from './activities.js';
 
 const CHAPTERS = [ch1, ch2, ch3, ch4];
 const PKEY = 'tudor-advisor-progress-v1';
@@ -31,9 +32,10 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } },
   del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
-const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1, music: true, musicVol: 0.5 }, seenHowTo: false, inventory: {}, signature: null });
+const defaultProgress = () => ({ name: '', unlocked: 1, completed: {}, settings: { autoRead: false, easyRead: false, bigText: false, look: 1, music: true, musicVol: 0.5 }, seenHowTo: false, inventory: {}, signature: null, legacy: {} });
 let progress = { ...defaultProgress(), ...store.get(PKEY, {}) };
 progress.inventory = progress.inventory || {};
+progress.legacy = progress.legacy || {};
 progress.settings = { ...defaultProgress().settings, ...(progress.settings || {}) };
 const saveProgress = () => store.set(PKEY, progress);
 
@@ -133,10 +135,12 @@ const G = {
 };
 window.__game = G; // handy for teachers' debugging and automated tests
 G.debugFinish = () => finishChapter();
+G.dbg = { talk: (id) => talkTo(G.npcs.get(id)), spot: (id) => useSpot(G.spots.get(id)), source: (id) => examineSource(G.sources.get(id)) };
 window.__music = () => music;
 
 function freshState(ch) {
-  return { flags: {}, sources: {}, facts: [], favour: ch.meters.favour, honesty: ch.meters.honesty, letter: null };
+  // legacy = choices carried over from earlier chapters (e.g. whether you helped Kit)
+  return { v: ch.v || 1, flags: {}, sources: {}, facts: [], favour: ch.meters.favour, honesty: ch.meters.honesty, letter: null, tasks: {}, legacy: { ...(progress.legacy || {}) } };
 }
 const talked = (id) => !!G.s.flags['talked_' + id];
 
@@ -165,6 +169,9 @@ function loadChapter(ch, saved) {
   disposeScene();
   G.ch = ch;
   G.s = saved ? saved.s : freshState(ch);
+  G.s.tasks = G.s.tasks || {};
+  G.s.legacy = G.s.legacy || {};
+  G.race = null;
   G.treasures = forChapter(OBJECTS, ch.id);
   G.paintings = [...forChapter(PAINTINGS, ch.id), ...galleryFor(ch.id)];
   G.world = buildWorld(scene, { ...ch.era, objects: G.treasures, paintings: G.paintings });
@@ -198,7 +205,7 @@ function loadChapter(ch, saved) {
   }
 
   for (const sp of ch.spots) {
-    const [x, z] = G.world.anchors[sp.anchor];
+    const [x, z] = sp.pos || G.world.anchors[sp.anchor];
     const ring = glowRing();
     ring.position.set(x, 0.05, z);
     const marker = markerSprite('!');
@@ -213,6 +220,10 @@ function loadChapter(ch, saved) {
   G.area = null;
   G.mapBg = drawMapBackground(220, 220);
   G.doneObjectives = new Set(ch.objectives.filter((o) => o.done(G.s)).map((o) => o.id));
+  $('#m-honesty .mtxt').textContent = ' ' + (ch.honestyName || 'Honesty');
+  $('#m-honesty .mlabel').firstChild.textContent = ch.honestyIcon || '⚖️';
+  $('#mood').dataset.k = '';
+  $('#timer').hidden = true;
   refresh();
 }
 
@@ -372,16 +383,28 @@ function renderMeters() {
   $('#m-favour .fill').style.width = f + '%';
   $('#m-honesty .fill').style.width = h + '%';
   $('#m-favour').classList.toggle('danger', f < 25);
+  // Chapters 2–4: the King's face shows his mood.
+  const mood = $('#mood');
+  if (!G.ch.kingMood) { mood.hidden = true; return; }
+  const m = moodOf(f);
+  mood.hidden = false;
+  if (mood.dataset.k !== m.key) {
+    const changed = !!mood.dataset.k;
+    mood.dataset.k = m.key;
+    mood.innerHTML = moodFaceHTML(imgURL('henry'), f) + `<span class="mood-text"><small>The King is</small><b>${m.label}</b></span>`;
+    if (changed) { mood.classList.remove('pulse'); void mood.offsetWidth; mood.classList.add('pulse'); }
+  }
 }
 
 function applyFx(fx) {
   if (!fx) return;
   const parts = [];
   if (fx.favour) { G.s.favour = clamp(G.s.favour + fx.favour, 0, 100); parts.push(`${fx.favour > 0 ? '+' : ''}${fx.favour} 👑 King's Favour`); }
-  if (fx.honesty) { G.s.honesty = clamp(G.s.honesty + fx.honesty, 0, 100); parts.push(`${fx.honesty > 0 ? '+' : ''}${fx.honesty} ⚖️ Honesty`); }
+  if (fx.honesty) { G.s.honesty = clamp(G.s.honesty + fx.honesty, 0, 100); parts.push(`${fx.honesty > 0 ? '+' : ''}${fx.honesty} ${G.ch.honestyIcon || '⚖️'} ${G.ch.honestyName || 'Honesty'}`); }
+  if (fx.time && G.race) { G.race.left = Math.max(1, G.race.left + fx.time); parts.push(`${fx.time > 0 ? '+' : ''}${fx.time} seconds ⏳`); }
   if (parts.length) {
-    toast(parts.join('   '), (fx.favour || 0) < 0 ? 'bad' : 'good');
-    pulse(fx.favour ? '#m-favour' : '#m-honesty');
+    toast(parts.join('   '), (fx.favour || 0) < 0 || (fx.time || 0) < 0 ? 'bad' : 'good');
+    if (fx.favour || fx.honesty) pulse(fx.favour ? '#m-favour' : '#m-honesty');
   }
   renderMeters();
 }
@@ -648,15 +671,27 @@ async function talkTo(n) {
     if (node.fact) addFact(node.fact);
     if (node.fx) applyFx(node.fx);
     if (node.teleport) teleport = node.teleport;
+    if (node.raceEnd) stopRace(true);
     const who = node.who === 'you' ? you : them;
-    const i = await showLine({ ...who, text: node.text, choices: node.choices, narrator: node.who === 'narrator' });
     let next = node.next;
-    if (node.choices) {
-      const c = node.choices[i];
-      if (c.fx) applyFx(c.fx);
-      if (c.set) G.s.flags[c.set] = true;
-      if (c.fact) addFact(c.fact);
-      next = c.next;
+    if (node.text) {
+      const i = await showLine({ ...who, text: typeof node.text === 'function' ? node.text(G.s) : node.text, choices: node.choices, narrator: node.who === 'narrator' });
+      if (node.choices) {
+        const c = node.choices[i];
+        if (c.fx) applyFx(c.fx);
+        if (c.set) G.s.flags[c.set] = true;
+        if (c.fact) addFact(c.fact);
+        if (c.legacy) setLegacy(c.legacy);
+        if (c.rival !== undefined) rivalResult(c.rival);
+        next = c.next;
+      }
+    }
+    if (node.cards || node.run) {
+      hideDialogue();
+      setMode('ui');
+      if (node.cards) await cardSequence(G.ch.scenes[node.cards], { title: G.ch.scenes[node.cards + 'Title'] || '', finalLabel: 'Continue ▶' });
+      if (node.run) await runActivity(node.run);
+      setMode('dialogue');
     }
     if (node.end === 'chapter') { endChapter = true; break; }
     id = typeof next === 'function' ? next(G.s) : next;
@@ -669,8 +704,98 @@ async function talkTo(n) {
   if (teleport) { G.pos.x = teleport[0]; G.pos.z = teleport[1]; controls.yaw = teleport[2]; controls.pitch = 0; G.area = null; }
   refresh();
   saveChapter();
+  if (G.race && G.race.left <= 0) return raceOutOfTime();
   if (G.s.favour <= 0) return failChapter();
   if (endChapter) return finishChapter();
+  setMode('play');
+}
+
+// ---------------- Special activities (Chapters 2–4) ----------------
+const actAPI = {
+  openPanel: (h, c) => openPanel(h, c), closePanel: () => closePanel(), esc: (t) => esc(t), strip: (t) => strip(t),
+  imgURL: (k) => imgURL(k), creditLine: (k) => creditLine(k), speakBtn: (q) => speakBtn(q), autoSpeak: (t) => autoSpeak(t),
+  glossify: (el) => glossify(el), toast: (t, k) => toast(t, k), createQuillPad: (h, o) => createQuillPad(h, o), shuffle: (a) => shuffle(a),
+  portraitURL: (l, k) => portraitURL(l, k),
+  figure: (key) => `<figure class="tpic"><img src="${imgURL(key)}" alt=""><figcaption>${creditLine(key)}</figcaption></figure>`,
+  // Activities never end the chapter early: the King's favour cannot drop below 5 inside them.
+  applyFx: (fx) => { applyFx(fx); if (G.s.favour < 5) { G.s.favour = 5; renderMeters(); } },
+  meters: () => ({ favour: G.s.favour, honesty: G.s.honesty }),
+};
+
+async function runActivity(name) {
+  const cfg = G.ch.activities[name];
+  let res;
+  if (cfg.type === 'cards') { await cardSequence(cfg.cards, { title: cfg.title || '', finalLabel: 'Continue ▶' }); res = { seen: true }; }
+  else res = await ACTIVITIES[cfg.type](actAPI, cfg, G.s);
+  G.s.tasks[name] = res;
+  if (cfg.set) G.s.flags[cfg.set] = true;
+  refresh();
+  saveChapter();
+  return res;
+}
+
+// Choices that carry over into later chapters.
+function setLegacy(obj) {
+  Object.assign(progress.legacy, obj);
+  Object.assign(G.s.legacy, obj);
+  saveProgress();
+}
+function rivalResult(spotted) {
+  G.s.rival = spotted;
+  setLegacy({ ['rival' + G.ch.id]: spotted });
+  toast(spotted ? '🦊 You spotted the Duke of Norfolk\'s trick!' : '🦊 Oh dear… the Duke of Norfolk has tricked you!', spotted ? 'good' : 'bad');
+}
+
+// ---------------- The race against time (Chapter 4) ----------------
+const raceName = () => Object.keys(G.ch.activities || {}).find((k) => G.ch.activities[k].type === 'race');
+function startRace(name) {
+  const cfg = G.ch.activities[name];
+  G.race = { name, cfg, left: cfg.seconds, total: cfg.seconds, done: false };
+  G.s.flags[cfg.flag] = true;
+  G.s.raceAttempts = (G.s.raceAttempts || 0) + 1;
+  for (const id of cfg.resetTalk || []) delete G.s.flags['talked_' + id];
+  G.pos.x = cfg.start[0]; G.pos.z = cfg.start[1]; controls.yaw = cfg.start[2]; controls.pitch = 0; G.area = null;
+  $('#timer').hidden = false;
+  updateTimer();
+  refresh();
+  saveChapter();
+  setMode('play');
+}
+function updateTimer() {
+  if (!G.race) return;
+  const t = Math.max(0, Math.ceil(G.race.left));
+  const el = $('#timer');
+  el.querySelector('.tt').textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
+  el.querySelector('.tbar span').style.width = clamp((G.race.left / G.race.total) * 100, 0, 100) + '%';
+  el.classList.toggle('low', t <= 10);
+}
+function stopRace(ok) {
+  if (!G.race || G.race.done) return;
+  const r = G.race;
+  r.done = true;
+  $('#timer').hidden = true;
+  const left = Math.max(0, Math.round(r.left));
+  G.s.tasks[r.name] = ok
+    ? { score: 1, max: 1, summary: `Reached the Queen with ${left} seconds to spare (attempt ${G.s.raceAttempts})` }
+    : { score: 0, max: 1, summary: `Ran out of time after ${G.s.raceAttempts} attempt${G.s.raceAttempts === 1 ? '' : 's'}` };
+  if (ok) toast(`⏳ You made it with ${left} seconds to spare!`, 'good');
+  G.race = null;
+}
+async function raceOutOfTime() {
+  setMode('ui');
+  hideDialogue();
+  const r = G.race;
+  const p = openPanel(`<div class="card-head"><h2>⌛ The sand has run out!</h2></div>
+    <div class="card-text">${r.cfg.failText}</div>
+    <div class="row"><button class="btn" id="carry">Carry on with the story</button><button class="btn primary" id="retry">⏳ Try the race again</button></div>`, 'card');
+  const again = await new Promise((res) => { p.querySelector('#retry').onclick = () => res(true); p.querySelector('#carry').onclick = () => res(false); });
+  closePanel();
+  if (again) { startRace(r.name); return; }
+  stopRace(false);
+  const g = r.cfg.giveUp;
+  G.pos.x = g[0]; G.pos.z = g[1]; controls.yaw = g[2]; G.area = null;
+  refresh();
+  saveChapter();
   setMode('play');
 }
 
@@ -821,6 +946,21 @@ const letterStars = (score, max) => (score / max >= 0.9 ? 3 : score / max >= 0.6
 
 async function useSpot(sp) {
   if (sp.def.action === 'letter') return writeLetter();
+  if (sp.def.action === 'run') {
+    setMode('ui');
+    if (sp.def.message) await narrate(sp.def.message);
+    for (const name of [].concat(sp.def.run)) {
+      if (G.s.tasks[name]) continue;
+      if (G.ch.activities[name].type === 'race') { startRace(name); return; }
+      await runActivity(name);
+    }
+    if (sp.def.set) G.s.flags[sp.def.set] = true;
+    refresh();
+    saveChapter();
+    if (sp.def.finish) return finishChapter();
+    setMode('play');
+    return;
+  }
   if (sp.def.action === 'flag') {
     setMode('ui');
     await narrate(sp.def.message);
@@ -857,13 +997,33 @@ async function finishChapter() {
   const result = {
     favour: Math.round(G.s.favour), honesty: Math.round(G.s.honesty),
     sources: srcCorrect, sourcesMax: ch.sources.length,
-    letter: G.s.letter ? G.s.letter.score : 0, letterMax: G.s.letter ? G.s.letter.max : 10,
-    letterLines: G.s.letter ? G.s.letter.lines : [],
     quiz, quizMax: qres.max, quizDetails: qres.details, facts: G.s.facts.length, date: new Date().toLocaleDateString('en-GB'),
-    signature: G.s.letter ? G.s.letter.signature : null, typedSignature: G.s.letter ? G.s.letter.typedSignature : null,
     inventory: foundCount(),
   };
-  const pct = (result.sources / result.sourcesMax + result.letter / result.letterMax + result.quiz / result.quizMax) / 3;
+  if (ch.letter) {
+    Object.assign(result, {
+      letter: G.s.letter ? G.s.letter.score : 0, letterMax: G.s.letter ? G.s.letter.max : 10,
+      letterLines: G.s.letter ? G.s.letter.lines : [],
+      signature: G.s.letter ? G.s.letter.signature : null, typedSignature: G.s.letter ? G.s.letter.typedSignature : null,
+    });
+  }
+  // The chapter's special activities (Chapters 2–4)
+  const tasks = [], writing = [];
+  for (const [k, c] of Object.entries(ch.activities || {})) {
+    const t = G.s.tasks[k];
+    if (!t || !c.label) continue;
+    tasks.push({ icon: c.icon, label: c.label, score: t.score, max: t.max, summary: t.summary });
+    if (t.writing) writing.push(t.writing);
+  }
+  if (G.s.rival !== undefined) tasks.push({ icon: '🦊', label: 'The Duke of Norfolk\'s trick', summary: G.s.rival ? 'Spotted it!' : 'Fell for it' });
+  if (ch.kit) tasks.push({ icon: '🤝', label: 'Kindness to Kit', summary: G.s.legacy[ch.kit] ? 'Helped him' : 'Did not help him this time' });
+  if (tasks.length) result.tasks = tasks;
+  if (writing.length) result.writing = writing;
+  const parts = [result.quiz / result.quizMax];
+  if (result.sourcesMax) parts.push(result.sources / result.sourcesMax);
+  if (result.letterMax) parts.push(result.letter / result.letterMax);
+  for (const t of tasks) if (t.max) parts.push(t.score / t.max);
+  const pct = parts.reduce((a, b) => a + b, 0) / parts.length;
   result.stars = pct >= 0.85 ? 3 : pct >= 0.6 ? 2 : 1;
   progress.completed[ch.id] = result;
   progress.unlocked = Math.max(progress.unlocked, Math.min(4, ch.id + 1));
@@ -1120,9 +1280,10 @@ function reportHTML(ch, r, forPrint = false) {
       <p>You played <b>${esc(ch.advisor)}</b>. <span class="small muted">Quiz: first and only attempt.</span></p>
       <table>
         <tr><td>👑 King's Favour</td><td>${bar(r.favour)}</td></tr>
-        <tr><td>⚖️ Honesty</td><td>${bar(r.honesty)}</td></tr>
+        <tr><td>${ch.honestyIcon || '⚖️'} ${ch.honestyName || 'Honesty'}</td><td>${bar(r.honesty)}</td></tr>
         <tr><td>🕵️ Source detective</td><td>${r.sources} / ${r.sourcesMax} questions correct</td></tr>
-        <tr><td>✒️ Letter</td><td>${'⭐'.repeat(letterStars(r.letter, r.letterMax))} (${r.letter} / ${r.letterMax} points)</td></tr>
+        ${r.letterMax ? `<tr><td>✒️ Letter</td><td>${'⭐'.repeat(letterStars(r.letter, r.letterMax))} (${r.letter} / ${r.letterMax} points)</td></tr>` : ''}
+        ${(r.tasks || []).map((t) => `<tr><td>${t.icon} ${esc(t.label)}</td><td>${t.max ? `<b>${t.score} / ${t.max}</b> · ` : ''}${esc(t.summary || '')}</td></tr>`).join('')}
         <tr><td>🎓 Quiz</td><td>${r.quiz} / ${r.quizMax}</td></tr>
         <tr><td>📜 Facts discovered</td><td>${r.facts}</td></tr>
         <tr><td>🏺 King's Inventory</td><td>${r.inventory ?? foundCount()} / ${TOTAL_TREASURES} Tudor objects found (whole game)</td></tr>
@@ -1131,6 +1292,7 @@ function reportHTML(ch, r, forPrint = false) {
       ${r.quizDetails && r.quizDetails.length ? `<h4>Every quiz answer</h4>${answerListHTML(r.quizDetails)}` : ''}
       ${r.letterLines && r.letterLines.length ? `<h4>Your letter</h4><blockquote class="parch">${r.letterLines.map(esc).join('<br>')}
         ${r.signature ? `<br><img class="sig" src="${r.signature}" alt="signature">` : r.typedSignature ? `<br><i>${esc(r.typedSignature)}</i>` : ''}</blockquote>` : ''}
+      ${(r.writing || []).map((w) => `<h4>✒️ ${esc(w.title)}</h4><div class="written">${w.img ? `<img src="${w.img}" alt="handwriting">` : `<p>${esc(w.text)}</p>`}</div>`).join('')}
       <h4>What really happened to ${esc(ch.short)}?</h4><p>${esc(ch.fate)}</p>
       <h4>Think about it</h4><p><b>${esc(ch.reflection)}</b></p>
       <div class="lines">${'<div></div>'.repeat(forPrint ? 6 : 0)}</div>
@@ -1159,6 +1321,7 @@ async function reportImage(ch, r) {
   const sig = await loadImg(r.signature);
   const pupilSig = await loadImg(progress.signature);
   const written = await Promise.all((r.quizDetails || []).map((d) => loadImg(d.written && d.written.img)));
+  const extraWriting = await Promise.all((r.writing || []).map((w) => loadImg(w.img)));
   // Build a list of drawing steps, measuring the height as we go.
   const ops = []; let y = PAD;
   const text = (t, f, color = '#2a1a0a', indent = 0, gap = 8) => {
@@ -1180,8 +1343,18 @@ async function reportImage(ch, r) {
   text(`Played as ${ch.advisor}. Quiz: first and only attempt.`, font(20), '#6a5a46');
   rule();
   text(`Quiz score: ${r.quiz} / ${r.quizMax}     Stars: ${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}`, font(28, true), '#4e1010');
-  text(`King's Favour ${r.favour}%   ·   Honesty ${r.honesty}%   ·   Source detective ${r.sources}/${r.sourcesMax}   ·   Letter ${r.letter}/${r.letterMax}   ·   Facts ${r.facts}   ·   Inventory ${r.inventory ?? foundCount()}/${TOTAL_TREASURES}`, font(20));
+  text(`King's Favour ${r.favour}%   ·   ${ch.honestyName || 'Honesty'} ${r.honesty}%   ·   Source detective ${r.sources}/${r.sourcesMax}${r.letterMax ? `   ·   Letter ${r.letter}/${r.letterMax}` : ''}   ·   Facts ${r.facts}   ·   Inventory ${r.inventory ?? foundCount()}/${TOTAL_TREASURES}`, font(20));
   rule();
+  if (r.tasks && r.tasks.length) {
+    text('Chapter activities', font(30, true, true), '#4e1010');
+    r.tasks.forEach((t) => text(`${t.label}: ${t.max ? `${t.score}/${t.max} · ` : ''}${t.summary || ''}`, font(21), '#2a1a0a', 20, 4));
+    rule();
+  }
+  (r.writing || []).forEach((w, k) => {
+    text(w.title, font(26, true, true), '#4e1010');
+    if (extraWriting[k]) image(extraWriting[k], 320); else text(w.text || '', font(22), '#20140a', 20);
+    rule();
+  });
   text('Quiz answers', font(30, true, true), '#4e1010');
   (r.quizDetails || []).forEach((d, k) => {
     const [, skill] = SKILLS[d.skill] || ['', 'Question'];
@@ -1501,6 +1674,11 @@ function showChapterSelect() {
 }
 
 async function startChapter(ch, saved, fresh = false) {
+  if (saved && !saved.s.flags.chapterDone && (saved.s.v || 1) !== (ch.v || 1)) {
+    // This chapter was rewritten since the save was made, so it must start again.
+    toast(`Chapter ${ch.id} has been updated, so it starts from the beginning.`);
+    saved = null;
+  }
   if (fresh || !saved) store.del(SKEY);
   $('#loading').classList.add('show');
   await wait(30);
@@ -1509,6 +1687,14 @@ async function startChapter(ch, saved, fresh = false) {
   renderer.render(scene, camera);
   $('#loading').classList.remove('show');
   if (saved && saved.s.flags.chapterDone) return finishChapter(); // carry on with the ending and quiz
+  const rn = raceName();
+  if (saved && rn && G.s.flags[ch.activities[rn].flag] && !G.s.tasks[rn]) {
+    // The app was closed during the race: start the race again from the beginning.
+    setMode('ui');
+    await narrate('You were in the middle of the race! The sand in the hourglass has been turned over again. Run!', 'Run! ▶');
+    startRace(rn);
+    return;
+  }
   if (!saved) {
     setMode('ui');
     await cardSequence(ch.intro, { title: `Chapter ${ch.id} · ${ch.title}`, finalLabel: 'Begin ▶' });
@@ -1677,7 +1863,7 @@ function loop(now) {
 
   if (G.mode === 'play') {
     const mv = controls.input(dt);
-    const speed = 4.3;
+    const speed = G.race && !G.race.done ? 5.8 : 4.3; // you run during the race
     const fx = -Math.sin(controls.yaw), fz = -Math.cos(controls.yaw);
     const rx = Math.cos(controls.yaw), rz = -Math.sin(controls.yaw);
     const nx = G.pos.x + (fx * mv.y + rx * mv.x) * speed * dt;
@@ -1699,10 +1885,20 @@ function loop(now) {
     const k = controls.keys;
     if (actTarget && (k.has('e') || k.has('enter') || k.has(' '))) { k.delete('e'); k.delete('enter'); k.delete(' '); actTarget.go(); }
 
+    // Someone who stops you as you pass (the Duke of Norfolk's trick in Chapter 4).
+    for (const [, n] of G.npcs) {
+      if (n.def.ambush && n.group.visible && !talked(n.def.id) && Math.hypot(G.pos.x - n.group.position.x, G.pos.z - n.group.position.z) < 3.6) { talkTo(n); break; }
+    }
     if (frame % 3 === 0) updateGuide();
     if (now - G.lastSave > 5000) { G.lastSave = now; saveChapter(); }
   } else {
     $('#act').hidden = true;
+  }
+
+  if (G.race && !G.race.done && (G.mode === 'play' || G.mode === 'dialogue')) {
+    G.race.left -= dt;
+    if (frame % 4 === 0) updateTimer();
+    if (G.race.left <= 0 && G.mode === 'play') raceOutOfTime();
   }
 
   if (G.mode === 'dialogue' && G.focus) {

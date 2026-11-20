@@ -57,6 +57,7 @@ export const TIMELINE = [
   { y: 1541, t: 'Archbishop Cranmer leaves a letter about Queen Catherine on the King\'s seat in the Chapel Royal.', ch: 4, at: 'e' },
   { y: 1542, t: 'Catherine Howard is executed.', ch: 4, at: 'e' },
   { y: 1543, t: 'Henry marries Catherine Parr in Hampton Court Palace.', ch: 4, at: 'e' },
+  { y: 1546, t: 'A warrant is signed for Queen Catherine Parr\'s arrest, but she persuades Henry to forgive her.', ch: 4, at: 'e' },
   { y: 1547, t: 'Henry VIII dies, aged 55. His nine-year-old son becomes King Edward VI.', ch: 4, at: 'e' },
 ];
 
