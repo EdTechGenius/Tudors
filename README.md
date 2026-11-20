@@ -10,16 +10,16 @@ It runs in **Safari on iPad**, with nothing to install, no logins and no data co
 
 ## The four chapters
 
-| # | You play | Years | The King's demand | Wives covered | Key learning |
-|---|----------|-------|-------------------|---------------|--------------|
-| 1 | **Cardinal Thomas Wolsey** | 1527–29 | Get an annulment from the Pope | Catherine of Aragon, Anne Boleyn | The "King's Great Matter"; why the Pope said no (Charles V, the 1503 dispensation) |
-| 2 | **Sir Thomas More** | 1529–32 | Support Henry as Head of the Church | Catherine of Aragon, Anne Boleyn | Conscience vs loyalty; the break with Rome; Act of Supremacy |
-| 3 | **Thomas Cromwell** | 1539–40 | Find allies, money and a new wife | Jane Seymour, Anne of Cleves, (Anne Boleyn's fall) | Dissolution of the monasteries; English Bible; portraits as sources |
-| 4 | **Archbishop Thomas Cranmer** | 1541–47 | Tell the King terrible news about his Queen | Catherine Howard, Catherine Parr | Weighing evidence and bias; Henry's last years; Edward VI |
+| # | You play | Years | Main activity | Wives covered | Key learning |
+|---|----------|-------|---------------|---------------|--------------|
+| 1 | **Cardinal Thomas Wolsey** | 1527–29 | Gather evidence and write to the Pope | Catherine of Aragon, Anne Boleyn | The "King's Great Matter"; why the Pope said no (Charles V, the 1503 dispensation) |
+| 2 | **Sir Thomas More** — *The Oath* | 1532–35 | Hard choices on the Conscience Scale, a code to crack, questions in the Tower | Catherine of Aragon, Anne Boleyn | Conscience vs loyalty; the break with Rome; Act of Supremacy; biased sources |
+| 3 | **Thomas Cromwell** — *Find the King a Wife* | 1539–40 | Compare four brides, test a portrait, plan a welcome on a budget, damage control | Jane Seymour, Anne of Cleves, (Anne Boleyn's fall) | Alliances; Dissolution of the monasteries; portraits as sources; Tudor money |
+| 4 | **Archbishop Thomas Cranmer** — *Save the Queen* | 1541–47 | Investigate Catherine Howard, then race the clock to save Catherine Parr and help her persuade the King | Catherine Howard, Catherine Parr | Evidence and bias; persuasive language; Henry's last years; Edward VI |
 
 Each chapter takes about **35–45 minutes**, roughly one lesson, or longer if pupils hunt for every Inventory object. Chapters unlock in order. If time is short, the quiz can be finished at the start of the next lesson, because progress is saved.
 
-### What pupils do in each chapter
+### What pupils do in every chapter
 1. **Meet the King** in his Privy Chamber and receive a task.
 2. **Explore Hampton Court**: Base Court, Clock Court, the Great Hall, Great Kitchens, Chapel Royal, the King's apartments, the Privy Garden by the Thames, and their own study.
 3. **Examine 3 sources** (the Bible, portraits, letters, the Valor Ecclesiasticus, the "HA" initials in the Great Hall…). Each source has a *Source detective* question: *Who made it? Why? Can we trust it?*
@@ -28,6 +28,31 @@ Each chapter takes about **35–45 minutes**, roughly one lesson, or longer if p
    - ⚖️ **Honesty**: telling the truth raises it, even when the King doesn't like it.
 5. **Write a letter** at their desk, building it from greetings, evidence and requests. Some options unlock only after finding the right source. Then they seal it with wax.
 6. **Report to the King**, then see **"What really happened"**, the updated **six wives tracker**, an 11-question **quiz** (one attempt only) and a printable **Royal Report**.
+
+Chapter 1 follows exactly this pattern. **Chapters 2, 3 and 4 each swap in different main tasks**, so that no two chapters feel the same:
+
+#### Chapter 2: The Oath (Thomas More)
+- 🔐 **Crack the code:** a coded letter from the Emperor's ambassador, Eustace Chapuys. Pupils turn a **cipher wheel** to set the key, decode the first word themselves, then answer a question about why ambassadors wrote in code (and why Chapuys's letters are biased).
+- ⚖️ **The Conscience Scale:** four real dilemmas from 1532–34 (the Great Seal, Anne Boleyn's coronation, Meg's letter, the Oath at Lambeth). A balance tips between 👑 *Loyalty to the King* and ✝️ *Conscience* with each choice. There is **no right answer**; after each choice, pupils see what the real More did. In this chapter the "Honesty" meter is called **Conscience**.
+- 🗝️ **Questions in the Tower:** Cromwell (and finally Richard Rich) question More. Saying "yes" betrays his conscience, saying "no" is treason, so pupils must find the **careful answer** each time. It ends with how Rich probably lied at More's trial.
+- ✒️ **A last letter to Meg:** free writing with the quill (More wrote his last letter with a piece of charcoal). The handwriting appears in the report.
+
+#### Chapter 3: Find the King a Wife (Thomas Cromwell)
+- 💍 **Royal matchmaking:** four real candidates (Christina of Denmark, Marie of Guise, Anne of Cleves and her sister Amalia) with real portraits. Pupils judge whether each one is **good for England's safety**, then recommend a bride and give a reason: *what Henry wants vs what England needs*.
+- 🖼️ **Portrait detective:** four people's descriptions of Anne of Cleves. Pupils sort them (*looked like the painting* / *did not*), see why each person might have said it, then decide whether we can trust Holbein's portrait.
+- 💰 **Plan the welcome on a budget:** £1,000 to spend. The essentials (warships and horses) must be included, the Treasurer refuses anything over budget, and a Tudor money question follows (£1 = 20 shillings).
+- 🔥 **Damage control:** after the disastrous meeting at Rochester, three problems, each balancing **the King's mood, the alliance and Cromwell's own safety**.
+
+#### Chapter 4: Save the Queen (Thomas Cranmer)
+- The chapter begins with the Catherine Howard investigation (evidence, a letter left on the King's seat), then jumps to Catherine Parr's wedding and the King's ring.
+- ⏳ **The race:** in 1546, pupils find the arrest warrant for Catherine Parr in the Privy Garden and must **run to the Long Gallery before the hourglass runs out** (about a minute; pupils run faster than normal). If time runs out they can try again or carry on with the story.
+- 🗣️ **Persuade the King:** pupils help Catherine choose her words in four parts. **Henry's face reacts to every answer**, and the right choices use her real words: *"And is it even so, sweetheart? Then perfect friends we are now again."*
+- ✒️ **The King's chronicle:** after Henry's death, pupils write the last entry in his chronicle: how should Henry VIII be remembered?
+
+#### Running through Chapters 2–4
+- 👑 **The King's mood:** a small portrait of Henry in the top-right corner changes between *Delighted, Pleased, Cross* and *Furious* as his favour rises and falls.
+- 🦊 **A rival, the Duke of Norfolk:** in each chapter Norfolk sets a trap (a secret letter to Catherine of Aragon, putting his niece Catherine Howard near the King, and finally trying to delay you during the race). The report shows whether the pupil spotted it. His story pays off at the end: he was due to be executed on the morning Henry died, and survived.
+- 🤝 **Choices that carry over: Kit.** Kit is an invented character: a kitchen boy in Chapter 2, a royal messenger in Chapter 3 and a page to the Queen in Chapter 4. If pupils were kind to him, he gives them a warning about Norfolk in Chapter 3 and **extra time in the race** in Chapter 4. (Because this is stored on the iPad, it works best when chapters are played in order on the same device.)
 
 Palace staff (a Yeoman of the Guard, a page, a spit boy, a gardener and a musician) share bonus facts about Tudor life. The Great Kitchens and the toilet that seated 28 tend to be favourites.
 
@@ -111,7 +136,7 @@ Everything the game needs (including the 3D library) is in this repository, so i
 ### For teachers
 - **Unlock all chapters:** open Settings → *For teachers*, enter the code **`1509`** (the year Henry became king) and tap *Unlock all chapters*. Useful for demonstrating Chapter 3 on the board without playing 1 and 2 first.
 - **Delete all progress on this iPad** is in the same section.
-- **Printing reports:** at the end of each chapter pupils can tap **🖨️ Print / Save as PDF**. Each Royal Report includes their scores, the letter they wrote, what really happened and a **reflection question with writing lines** for their books. Completed reports can be reprinted from the chapter menu (**🖨️ My reports**).
+- **Printing reports:** at the end of each chapter pupils can tap **🖨️ Print / Save as PDF**. Each Royal Report includes their scores, the letter they wrote, the results of the chapter's special activities (for example *Questions in the Tower: 4/5 careful answers*, *Norfolk's trick: spotted it!*), any free handwriting (the letter to Meg, the King's chronicle), what really happened and a **reflection question with writing lines** for their books. Completed reports can be reprinted from the chapter menu (**🖨️ My reports**).
 - On a computer you can play with **W A S D** or the arrow keys, drag with the mouse to look, and press **E** to interact.
 
 ---
@@ -121,9 +146,9 @@ Everything the game needs (including the 3D library) is in this repository, so i
 | Lesson | Activity | Discussion / follow-up |
 |--------|----------|------------------------|
 | 1 | Chapter 1: Wolsey | Why couldn't Henry just get divorced? Was it fair to blame Wolsey? |
-| 2 | Chapter 2: More | Conscience vs loyalty debate: would *you* have signed the oath? |
-| 3 | Chapter 3: Cromwell | Were the monasteries closed for religion or for money? Look at real Holbein portraits: can we trust them? |
-| 4 | Chapter 4: Cranmer | Evidence and bias (the Lascelles statement). Legend vs history (the Haunted Gallery). |
+| 2 | Chapter 2: More | Conscience vs loyalty debate: would *you* have signed the oath? Compare pupils' Conscience Scales. Read some letters to Meg aloud. |
+| 3 | Chapter 3: Cromwell | Who would *you* have chosen as queen, and why? Were the monasteries closed for religion or for money? Can we trust a portrait? |
+| 4 | Chapter 4: Cranmer | Evidence and bias (the Lascelles statement). Persuasive language: why did Catherine Parr's words work? Use the chronicle entries for a "How should Henry be remembered?" debate. |
 | 5 | Review | Use the reports to compare all four advisors. Which advisor was most successful? Who was most honest? Was it possible to be both? |
 
 Curriculum links (KS2 National Curriculum, History): chronological understanding; cause and consequence; continuity and change; similarity and difference; historical significance; using sources and understanding how interpretations are constructed.
@@ -138,6 +163,8 @@ The game simplifies events and the words in sources for 10–11 year olds. It no
 
 Some things were simplified on purpose:
 - Chapter 1 covers 1527–29 and Chapter 3 1539–40, so the years between are told through intro cards and timeline entries.
+- **Kit is invented.** Prices in the Chapter 3 budget are made up. Chapuys's coded letter is simplified (real ambassadors used symbols, not a simple letter shift).
+- In Chapter 4, the player warns Catherine Parr. In real life the warning came from a dropped copy of the warrant carried to her by a servant; the game says so. Famous jokes from Christina of Denmark and Marie of Guise are marked as stories that may not be true.
 - The palace layout is simplified. The real Hampton Court is much bigger, and some rooms (such as the study) are invented for the game.
 - Executions are reported, never shown.
 
@@ -147,5 +174,6 @@ Some things were simplified on purpose:
 - Plain HTML, CSS and JavaScript modules with no build step. 3D graphics use [three.js](https://threejs.org) r160 (MIT licence), included in `vendor/`.
 - All textures are drawn in code, so there are no image files to load.
 - `js/world.js` builds the palace, `js/characters.js` builds the people, and `js/main.js` is the game engine.
+- `js/activities.js` contains the special activities used in Chapters 2–4 (conscience scale, interrogation, cipher, matchmaking, portrait detective, budget, damage control, persuasion, free writing). The race is part of `main.js`.
 - **All historical content is in `js/content/`**: one file per chapter, plus `common.js` (wives, timeline, palace staff), `objects.js` (the 55 Inventory objects and the paintings) and `glossary.js` (the Word Bank). You can edit dialogue, sources, letters, objects and quizzes there without touching the engine.
 - `js/quill.js` is the handwriting pad, `js/props.js` builds the 3D objects, and `js/main.js` is the game engine.

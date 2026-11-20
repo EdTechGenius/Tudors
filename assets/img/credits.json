@@ -313,5 +313,26 @@
   "license": "CC BY-SA 4.0",
   "artist": "Photograph of a 1550 edition of Catherine Parr's Prayers or Meditations",
   "source": "https://commons.wikimedia.org/wiki/File:1550_Parr_Prayers_or_Meditations.jpg"
+ },
+ "christina": {
+  "file": "christina.jpg",
+  "title": "Hans Holbein d. J. - Christina of Denmark, Ducchess of Milan - WGA11571.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, 1538 (National Gallery, London)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Christina_of_Denmark%2C_Ducchess_of_Milan_-_WGA11571.jpg"
+ },
+ "norfolk": {
+  "file": "norfolk.jpg",
+  "title": "Hans Holbein d. J. - Thomas Howard, Duke of Norfolk - WGA11573.jpg",
+  "license": "Public domain",
+  "artist": "Hans Holbein the Younger, c. 1539 (Royal Collection)",
+  "source": "https://commons.wikimedia.org/wiki/File:Hans_Holbein_d._J._-_Thomas_Howard%2C_Duke_of_Norfolk_-_WGA11573.jpg"
+ },
+ "guise": {
+  "file": "guise.jpg",
+  "title": "Attributed to Corneille de Lyon - Mary of Guise, 1515 - 1560. Queen of James V - Google Art Project.jpg",
+  "license": "Public domain",
+  "artist": "Attributed to Corneille de Lyon, c. 1537 (National Galleries of Scotland)",
+  "source": "https://commons.wikimedia.org/wiki/File:Attributed_to_Corneille_de_Lyon_-_Mary_of_Guise%2C_1515_-_1560._Queen_of_James_V_-_Google_Art_Project.jpg"
  }
 }
